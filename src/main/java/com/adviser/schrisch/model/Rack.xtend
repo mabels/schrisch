@@ -15,8 +15,10 @@ class Rack implements Cloneable {
 	String comment
 	String row
 	Map<String, Content> contents
+	val DataCenter parent
 	
-	new(String name, int height, String comment, String row, HashMap<String, Content> contents) {
+	new(DataCenter dataCenter, String name, int height, String comment, String row, HashMap<String, Content> contents) {
+		this.parent = dataCenter
 		this.name = name
 		this.height = height
 		this.comment = comment

@@ -17,8 +17,10 @@ class Content {
 	boolean has_problems
 	Map<String, String> attributes 
 	String id 
-	new(String name, String label, String asset_no, String type, String tags, 
+	val Rack parent
+	new(Rack rack, String name, String label, String asset_no, String type, String tags, 
 		Iterable<Space> spaces, Iterable<Port> ports, Iterable<Ip> ips, boolean has_problems, Map<String, String> attributes, String id) {
+		this.parent = rack
 		this.name = name
 		this.label = label
 		this.asset_no = asset_no

@@ -48,8 +48,9 @@ class RackTablesApi {
 		ret
 	}
 
-	def load_content_from_racktables(JsonNode content) {
+	def load_content_from_racktables(Rack rack, JsonNode content) {
 		new Content(
+			rack, 
 			content.findValue('name').asText,
 			content.findValue('label').asText,
 			content.findValue('asset_no').asText,
@@ -83,17 +84,19 @@ class RackTablesApi {
 		)
 	}
 
-	def load_from_rack_racktables(JsonNode rack) {
-		val name = rack.findValue('name').asText
-		val height = rack.findValue('height').asInt
-		val comment = rack.findValue('comment').asText
-		val row = rack.findValue('row').asText
+	def load_from_rack_racktables(DataCenter dataCenter, JsonNode in_rack) {
+		val name = in_rack.findValue('name').asText
+		val height = in_rack.findValue('height').asInt
+		val comment = in_rack.findValue('comment').asText
+		val row = in_rack.findValue('row').asText
 		val contents = new HashMap<String, Content>()
-		request(rack.findValue('content').findValue('__ref__').asText).forEach [ in_content |
-			val content = load_content_from_racktables(in_content)
+		val rack = new Rack(dataCenter, name, height, comment, row, contents)
+
+		request(in_rack.findValue('content').findValue('__ref__').asText).forEach [ in_content |
+			val content = load_content_from_racktables(rack, in_content)
 			contents.put(content.ident, content)
 		]
-		new Rack(name, height, comment, row, contents)
+		rack
 	}
 
 	def static loadFromRackTables(ImportRackTables.Config config) {
@@ -102,11 +105,12 @@ class RackTablesApi {
 	
 	def load_datacenter() {	
 		val racks = new HashMap<String, Rack>
+		val dataCenter = new DataCenter(racks)
 		request("/rack").forEach [ in_rack |
-			val rack = load_from_rack_racktables(in_rack)
+			val rack = load_from_rack_racktables(dataCenter, in_rack)
 			racks.put(rack.ident, rack)
 		]
-		new DataCenter(racks)
+		return dataCenter
 	}
 
 }

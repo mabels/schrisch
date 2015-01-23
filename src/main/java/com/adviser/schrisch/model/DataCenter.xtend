@@ -12,5 +12,7 @@ class DataCenter {
 		racks = map
 	}
 	
-	
+	def getIdent() {
+		return hashCode
+	}
 }
