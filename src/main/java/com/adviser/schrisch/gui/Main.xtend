@@ -1,24 +1,24 @@
-package com.adviser.schrisch
+package com.adviser.schrisch.gui
 
 import java.io.File
+import java.io.IOException
 import java.net.InetSocketAddress
+import javax.servlet.ServletException
+import javax.servlet.http.HttpServletRequest
+import javax.servlet.http.HttpServletResponse
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.servlet.DefaultServlet
 import org.eclipse.jetty.servlet.ServletContextHandler
 import org.eclipse.jetty.servlet.ServletHolder
 import org.eclipse.rap.rwt.application.Application
 import org.eclipse.rap.rwt.application.ApplicationConfiguration
+import org.eclipse.rap.rwt.client.WebClient
 import org.eclipse.rap.rwt.engine.RWTServlet
 import org.eclipse.rap.rwt.engine.RWTServletContextListener
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import javax.servlet.ServletException
-import java.io.IOException
-import org.eclipse.rap.rwt.client.WebClient
 
 class Main {
 
@@ -54,7 +54,7 @@ class Main {
   static class Configuration implements ApplicationConfiguration {
 
     override configure(Application application) {
-      application.addEntryPoint('/ui', HelloWorld,
+      application.addEntryPoint('/ui', Layout,
         #{
           WebClient.PAGE_TITLE -> 'schrisch - Schrank + Tisch',
           WebClient.BODY_HTML -> '<b>...</b>'
