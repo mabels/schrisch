@@ -1,41 +1,46 @@
 package com.adviser.schrisch.gui
 
-import java.util.List
+import com.adviser.schrisch.ImportRackTables
+import com.adviser.schrisch.model.DataCenter
+import com.adviser.schrisch.model.Rack
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.viewers.Viewer
 import org.eclipse.swt.widgets.Composite
-import org.eclipse.xtend.lib.annotations.Accessors
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
+import com.adviser.schrisch.model.Content
+import org.eclipse.jface.viewers.ViewerSorter
 
-class DataCentersTreeView {
+class DataCentersTreeView implements SelectionProvider {
 
-  new(Composite parent) {
+  ApplicationContext applicationContext
+
+  TreeViewer viewer
+
+  new(ApplicationContext applicationContext, Composite parent) {
+    this.applicationContext = applicationContext
+
+    // TODO: cleanup on dispose
+    this.applicationContext.selectionManager.provider = this
     createControls(parent)
   }
 
   private def createControls(Composite parent) {
-    new TreeViewer(parent, flags(V_SCROLL)) => [
+    viewer = new TreeViewer(parent, flags(V_SCROLL)) => [
       contentProvider = new TreeContentProvider()
-      labelProvider = new LabelProvider()
-      addSelectionChangedListener[ e |
-        val selection = (e.selection as IStructuredSelection).firstElement
-      ]
-      // TODO: This is the dummy-tree
-      input = new TreeItem(null, 'root') => [ root |
-        (0 .. 50).forEach [ i |
-          root.children += new TreeItem(root, '''Item «i»''') => [ item |
-            (0 .. 10).forEach [ j |
-              item.children += new TreeItem(item, '''SubItem «i».«j»''')
-            ]
-          ]
-        ]
-      ]
+      labelProvider = new TreeContentLabelProvider()
+      sorter = new ViewerSorter()
+      addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
+      input = ImportRackTables.loadDataCenter()
     ]
+  }
+
+  override getSelection() {
+    (viewer.selection as IStructuredSelection).firstElement
   }
 
 }
@@ -46,7 +51,17 @@ class TreeContentProvider implements ITreeContentProvider {
   }
 
   override getChildren(Object parentElement) {
-    (parentElement as TreeItem).children
+    switch (parentElement) {
+      DataCenter: {
+        parentElement.racks.values
+      }
+      Rack: {
+        parentElement.contents.values
+      }
+      default: {
+        #[]
+      }
+    }
   }
 
   override getElements(Object inputElement) {
@@ -54,11 +69,21 @@ class TreeContentProvider implements ITreeContentProvider {
   }
 
   override getParent(Object element) {
-    (element as TreeItem).parent
+    switch (element) {
+      Rack: {
+        element.parent
+      }
+      Content: {
+        element.parent
+      }
+      default: {
+        null
+      }
+    }
   }
 
   override hasChildren(Object element) {
-    (element as TreeItem).children.size > 0
+    element.children.size > 0
   }
 
   override dispose() {
@@ -66,23 +91,20 @@ class TreeContentProvider implements ITreeContentProvider {
 
 }
 
-class TreeItem {
+class TreeContentLabelProvider extends LabelProvider {
 
-  String name
-
-  @Accessors
-  TreeItem parent
-
-  @Accessors
-  List<TreeItem> children = newArrayList
-
-  new(TreeItem parent, String name) {
-    this.parent = parent
-    this.name = name
-  }
-
-  override toString() {
-    name
+  override getText(Object element) {
+    switch (element) {
+      Rack: {
+        element.ident
+      }
+      Content: {
+        element.ident
+      }
+      default: {
+        element.toString
+      }
+    }
   }
 
 }

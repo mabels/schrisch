@@ -54,7 +54,13 @@ class Main {
   static class Configuration implements ApplicationConfiguration {
 
     override configure(Application application) {
-      application.addEntryPoint('/ui', Layout,
+      application.addEntryPoint('/ui',
+        [
+          val context = new ApplicationContextImpl() => [
+            selectionManager = new SelectionManager()
+          ]
+          return new Layout(context)
+        ],
         #{
           WebClient.PAGE_TITLE -> 'schrisch - Schrank + Tisch',
           WebClient.BODY_HTML -> '<b>...</b>'
@@ -67,7 +73,7 @@ class Main {
 
     override protected doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
       val s = request.servletPath + (request.pathInfo ?: '')
-      if (s == '/') {
+      if(s == '/') {
         response.sendRedirect('/ui')
       } else {
         super.doGet(request, response)

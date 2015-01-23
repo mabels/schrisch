@@ -8,17 +8,21 @@ import java.io.File
 import org.eclipse.xtend.lib.annotations.Accessors
 
 class ImportRackTables {
-	@Accessors
-	static class Config {
-		String apiurl
-	}
+  @Accessors
+  static class Config {
+    String apiurl
+  }
 
+  def static main(String[] args) {
+    val dataCenter = loadDataCenter()
+    SchrischFileApi.write(dataCenter)
 
-	def static main(String[] args) {
-		val mapper = new ObjectMapper(new YAMLFactory());
-		val ImportRackTables.Config config = mapper.readValue(new File("config.yaml"), Config)
-		val dataCenter = RackTablesApi.loadFromRackTables(config)
-		SchrischFileApi.write(dataCenter)
+  }
 
-	}
+  def static loadDataCenter() {
+    val mapper = new ObjectMapper(new YAMLFactory());
+    val ImportRackTables.Config config = mapper.readValue(new File("config.yaml"), Config)
+    return RackTablesApi.loadFromRackTables(config)
+  }
+
 }
