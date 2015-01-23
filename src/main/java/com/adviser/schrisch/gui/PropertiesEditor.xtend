@@ -2,8 +2,9 @@ package com.adviser.schrisch.gui
 
 import com.adviser.schrisch.model.Content
 import com.adviser.schrisch.model.Rack
+import java.util.ArrayList
+import org.eclipse.jface.viewers.ColumnLabelProvider
 import org.eclipse.jface.viewers.IStructuredContentProvider
-import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.TableViewer
 import org.eclipse.jface.viewers.TableViewerColumn
 import org.eclipse.jface.viewers.Viewer
@@ -12,7 +13,6 @@ import org.eclipse.swt.widgets.Composite
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
-import org.eclipse.jface.viewers.ColumnLabelProvider
 
 class PropertiesEditor implements SelectionListener {
 
@@ -51,7 +51,6 @@ class PropertiesEditor implements SelectionListener {
         }
       ]
       contentProvider = new TableContentProvider()
-      sorter = new ViewerSorter()
     ]
   }
 
@@ -77,14 +76,18 @@ class TableContentProvider implements IStructuredContentProvider {
         ]
       }
       Content: {
-        #[
-          'Asset Number' -> inputElement.asset_no,
-          'Id' -> inputElement.id,
-          'Label' -> inputElement.label,
-          'Name' -> inputElement.name,
-          'Tags' -> inputElement.tags,
-          'Type' -> inputElement.type
-        ]
+        val result = new ArrayList<Pair<String, Object>>()
+        result += 'Asset Number' -> (inputElement.asset_no as Object)
+        result += 'Id' -> (inputElement.id as Object)
+        result += 'Label' -> (inputElement.label as Object)
+        result += 'Name' -> (inputElement.name as Object)
+        result += 'Tags' -> (inputElement.tags as Object)
+        result += 'Type' -> (inputElement.type as Object)
+        result += 'Problems' -> (Boolean.valueOf(inputElement.has_problems) as Object)
+        return result
+      }
+      default: {
+        #[]
       }
     }
   }

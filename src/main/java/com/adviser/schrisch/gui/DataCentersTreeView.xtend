@@ -59,6 +59,14 @@ class TreeContentProvider implements ITreeContentProvider {
       Rack: {
         parentElement.contents.values
       }
+      Content: {
+        #[
+          'Attributes',
+          'IPs',
+          'Ports',
+          'Spaces'
+        ]
+      }
       default: {
         #[]
       }
