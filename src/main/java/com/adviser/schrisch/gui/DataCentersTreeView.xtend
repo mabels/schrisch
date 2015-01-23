@@ -35,6 +35,7 @@ class DataCentersTreeView implements SelectionProvider {
       labelProvider = new TreeContentLabelProvider()
       sorter = new ViewerSorter()
       addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
+      // TODO: This is too static currently
       input = ImportRackTables.loadDataCenter()
     ]
   }
