@@ -11,3 +11,11 @@ build the frontend with a local running server as the concept of https://c9.io/.
 We will render the data to a 3d svg canvas.
 
 the schrisch team
+
+for the racktables2schrick.rb script you need a 
+config.yaml in the same directory
+
+that should look like:
+
+api:
+  url: http://racktables/api/url
