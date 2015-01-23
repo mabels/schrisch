@@ -1,22 +1,22 @@
 package com.adviser.schrisch.model.dto
 
 import com.adviser.schrisch.ImportRackTables
+import com.adviser.schrisch.model.Content
+import com.adviser.schrisch.model.DataCenter
+import com.adviser.schrisch.model.Ip
+import com.adviser.schrisch.model.Port
+import com.adviser.schrisch.model.Rack
+import com.adviser.schrisch.model.Space
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import org.eclipse.jetty.client.HttpClient
-import org.eclipse.jetty.http.HttpMethod
 import java.util.HashMap
-import com.adviser.schrisch.model.Rack
-import com.adviser.schrisch.model.Content
-import com.adviser.schrisch.model.Space
-import com.adviser.schrisch.model.Port
-import com.adviser.schrisch.model.Ip
+import org.eclipse.jetty.client.HttpClient
 import org.slf4j.LoggerFactory
 
 class RackTablesApi {
-	
+
 	static val LOGGER = LoggerFactory.getLogger(RackTablesApi)
-	
+
 	val objectMapper = new ObjectMapper()
 
 	val httpClient = new HttpClient()
@@ -30,14 +30,18 @@ class RackTablesApi {
 
 	def request(String url) {
 		val uri = #[config.apiurl, url].join()
-		LOGGER.debug("api-request:"+ uri)
+//		val p_url = new URLName(url)
+//		LOGGER.debug("api-request:" + p_url.toString+":"+p_url.username+":"+p_url.password)
+//		val a = httpClient.getAuthenticationStore();
+//		a.addAuthentication(new BasicAuthentication(new URI(uri), "schrisch", p_url.username, p_url.password));
+
 		val response = httpClient.GET(uri)
 		objectMapper.readValue(response.content, JsonNode);
 	}
-	
+
 	def load_attributes_from_racktables(JsonNode attributes) {
 		val ret = new HashMap<String, String>
-		attributes.fieldNames.forEach[fieldName|
+		attributes.fieldNames.forEach [ fieldName |
 			ret.put(fieldName, attributes.findValue(fieldName).asText)
 		]
 		ret
@@ -64,12 +68,12 @@ class RackTablesApi {
 				)
 			],
 			content.findValue('ips').map [ ip |
-				new Ip(			
+				new Ip(
 					ip.findValue('version').asText,
 					ip.findValue('type').asText,
-					ip.findValue('ip').findValue('address').asText+"/"+ip.findValue('ip').findValue('prefix'),
+					ip.findValue('ip').findValue('address').asText + "/" + ip.findValue('ip').findValue('prefix'),
 					ip.findValue('name').asText,
-					ip.findValue('address').asText					
+					ip.findValue('address').asText
 				)
 			],
 			content.findValue('has_problems').asBoolean,
@@ -91,13 +95,17 @@ class RackTablesApi {
 		new Rack(name, height, comment, row, contents)
 	}
 
-	def loadFromRackTables() {
+	def static loadFromRackTables(ImportRackTables.Config config) {
+		(new RackTablesApi(config)).load_datacenter
+	}
+	
+	def load_datacenter() {	
 		val racks = new HashMap<String, Rack>
 		request("/rack").forEach [ in_rack |
 			val rack = load_from_rack_racktables(in_rack)
 			racks.put(rack.ident, rack)
 		]
-		val dataCenter = new com.adviser.schrisch.model.DataCenter(racks)
+		val dataCenter = new DataCenter(racks)
 		return dataCenter
 	}
 

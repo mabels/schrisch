@@ -13,18 +13,12 @@ class ImportRackTables {
 		String apiurl
 	}
 
-	val mapper = new ObjectMapper(new YAMLFactory());
-
-	def niam(String[] args) {
-		val config = mapper.readValue(new File("config.yaml"), Config)
-		val api = new RackTablesApi(config)
-		val dataCenter = api.loadFromRackTables()
-		SchrischFileApi.write(dataCenter)
-		
-	}
 
 	def static main(String[] args) {
-		(new ImportRackTables()).niam(args)
+		val mapper = new ObjectMapper(new YAMLFactory());
+		val ImportRackTables.Config config = mapper.readValue(new File("config.yaml"), Config)
+		val dataCenter = RackTablesApi.loadFromRackTables(config)
+		SchrischFileApi.write(dataCenter)
 
 	}
 }
