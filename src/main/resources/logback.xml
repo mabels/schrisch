@@ -5,6 +5,8 @@
       </pattern>
     </encoder>
   </appender>
+  
+  <logger name="com.adviser" level="DEBUG" />
 
   <root level="INFO">
     <appender-ref ref="STDOUT" />

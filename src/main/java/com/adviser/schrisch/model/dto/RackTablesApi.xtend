@@ -12,6 +12,9 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import java.util.HashMap
 import org.eclipse.jetty.client.HttpClient
 import org.slf4j.LoggerFactory
+import org.eclipse.jetty.client.util.BasicAuthentication
+import javax.mail.URLName
+import java.net.URI
 
 class RackTablesApi {
 
@@ -29,13 +32,11 @@ class RackTablesApi {
 	}
 
 	def request(String url) {
-		val uri = #[config.apiurl, url].join()
-//		val p_url = new URLName(url)
-//		LOGGER.debug("api-request:" + p_url.toString+":"+p_url.username+":"+p_url.password)
-//		val a = httpClient.getAuthenticationStore();
-//		a.addAuthentication(new BasicAuthentication(new URI(uri), "schrisch", p_url.username, p_url.password));
-
-		val response = httpClient.GET(uri)
+		val uri = config.apiurl + url
+		val p_url = new URLName(uri)
+		var e_url = p_url.protocol+"://"+p_url.host+(if (p_url.port > 0) { ":"+p_url.port } else { "" })+"/"+p_url.file
+		httpClient.getAuthenticationStore().addAuthentication(new BasicAuthentication(new URI(e_url), "RacktablesAuthenticator", p_url.username, p_url.password));
+		val response = httpClient.GET(e_url)
 		objectMapper.readValue(response.content, JsonNode);
 	}
 
@@ -105,8 +106,7 @@ class RackTablesApi {
 			val rack = load_from_rack_racktables(in_rack)
 			racks.put(rack.ident, rack)
 		]
-		val dataCenter = new DataCenter(racks)
-		return dataCenter
+		new DataCenter(racks)
 	}
 
 }
