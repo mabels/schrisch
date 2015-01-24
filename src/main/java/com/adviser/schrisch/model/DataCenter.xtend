@@ -1,18 +1,21 @@
 package com.adviser.schrisch.model
 
-import java.util.Map
 import org.eclipse.xtend.lib.annotations.Accessors
-import java.util.HashMap
 
 @Accessors
-class DataCenter {
-	val Map<String, Rack> racks
-	
-	new(HashMap<String, Rack> map) {
-		racks = map
-	}
-	
-	def getIdent() {
-		return hashCode
+class DataCenter extends Base<DataCenters> {
+	String name
+	String Street
+	String ZipCode
+	String City
+	String Country
+	val racks = new Racks(this)
+
+	override getIdent() {
+		if (name != null) {
+			name
+		} else {
+			"" + hashCode
+		}
 	}
 }

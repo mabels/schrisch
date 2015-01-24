@@ -14,106 +14,98 @@ import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
 import com.adviser.schrisch.model.Content
 import org.eclipse.jface.viewers.ViewerSorter
+import com.adviser.schrisch.model.DataCenters
+import com.adviser.schrisch.model.Attributes
+import com.adviser.schrisch.model.Ips
+import com.adviser.schrisch.model.Ports
+import com.adviser.schrisch.model.Spaces
+import com.adviser.schrisch.model.Identable
+import com.adviser.schrisch.model.Parentable
+import com.adviser.schrisch.model.Valueable
 
 class DataCentersTreeView implements SelectionProvider {
 
-  ApplicationContext applicationContext
+	ApplicationContext applicationContext
 
-  TreeViewer viewer
+	TreeViewer viewer
 
-  new(ApplicationContext applicationContext, Composite parent) {
-    this.applicationContext = applicationContext
+	new(ApplicationContext applicationContext, Composite parent) {
+		this.applicationContext = applicationContext
 
-    // TODO: cleanup on dispose
-    this.applicationContext.selectionManager.provider = this
-    createControls(parent)
-  }
+		// TODO: cleanup on dispose
+		this.applicationContext.selectionManager.provider = this
+		createControls(parent)
+	}
 
-  private def createControls(Composite parent) {
-    viewer = new TreeViewer(parent, flags(V_SCROLL)) => [
-      contentProvider = new TreeContentProvider()
-      labelProvider = new TreeContentLabelProvider()
-      sorter = new ViewerSorter()
-      addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
-      // TODO: This is too static currently
-      input = ImportRackTables.loadDataCenter()
-    ]
-  }
+	private def createControls(Composite parent) {
+		viewer = new TreeViewer(parent, flags(V_SCROLL)) => [
+			contentProvider = new TreeContentProvider()
+			labelProvider = new TreeContentLabelProvider()
+			sorter = new ViewerSorter()
+			addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
+			// TODO: This is too static currently
+			input = ImportRackTables.loadDataCenters()
+		]
+	}
 
-  override getSelection() {
-    (viewer.selection as IStructuredSelection).firstElement
-  }
+	override getSelection() {
+		(viewer.selection as IStructuredSelection).firstElement
+	}
 
 }
 
 class TreeContentProvider implements ITreeContentProvider {
 
-  override inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-  }
+	override inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+	}
 
-  override getChildren(Object parentElement) {
-    switch (parentElement) {
-      DataCenter: {
-        parentElement.racks.values
-      }
-      Rack: {
-        parentElement.contents.values
-      }
-      Content: {
-        #[
-          'Attributes',
-          'IPs',
-          'Ports',
-          'Spaces'
-        ]
-      }
-      default: {
-        #[]
-      }
-    }
-  }
+	override getChildren(Object parentElement) {
+		switch (parentElement) {
+			DataCenter: {
+				parentElement.racks.values
+			}
+			Rack: {
+				parentElement.contents.values
+			}
+			Content: {
+				#[
+					parentElement.attributes,
+					parentElement.ips,
+					parentElement.ports,
+					parentElement.spaces
+				]
+			}
+			,
+			default: {
+				if(parentElement instanceof Valueable) {
+					return parentElement.values
+				}
+				return null
+			}
+		}
+	}
 
-  override getElements(Object inputElement) {
-    inputElement.children
-  }
+	override getElements(Object inputElement) {
+		inputElement.children
+	}
 
-  override getParent(Object element) {
-    switch (element) {
-      Rack: {
-        element.parent
-      }
-      Content: {
-        element.parent
-      }
-      default: {
-        null
-      }
-    }
-  }
+	override getParent(Object element) {
+		(element as Parentable).parent
+	}
 
-  override hasChildren(Object element) {
-    element.children.size > 0
-  }
+	override hasChildren(Object element) {
+		element.children.size > 0
+	}
 
-  override dispose() {
-  }
+	override dispose() {
+	}
 
 }
 
 class TreeContentLabelProvider extends LabelProvider {
 
-  override getText(Object element) {
-    switch (element) {
-      Rack: {
-        element.ident
-      }
-      Content: {
-        element.ident
-      }
-      default: {
-        element.toString
-      }
-    }
-  }
+	override getText(Object element) {
+		(element as Identable).ident
+	}
 
 }
