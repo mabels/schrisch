@@ -13,105 +13,111 @@ import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.viewers.Viewer
 import org.eclipse.jface.viewers.ViewerSorter
+import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Display
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
-import org.slf4j.LoggerFactory
 
 class DataCentersTreeView implements SelectionProvider {
 
-	
-	val ApplicationContext applicationContext
+  ApplicationContext applicationContext
 
-	TreeViewer viewer
+  TreeViewer viewer
 
-	new(ApplicationContext applicationContext, Composite parent) {
-		this.applicationContext = applicationContext
+  new(ApplicationContext applicationContext, Composite parent) {
+    this.applicationContext = applicationContext
 
-		// TODO: cleanup on dispose
-		this.applicationContext.selectionManager.provider = this
-		createControls(parent)
-	}
+    // TODO: cleanup on dispose
+    this.applicationContext.selectionManager.provider = this
+    createControls(parent)
+  }
 
-	private def createControls(Composite parent) {
-		viewer = new TreeViewer(parent, flags(V_SCROLL)) => [
-			contentProvider = new TreeContentProvider()
-			labelProvider = new TreeContentLabelProvider()
-			sorter = new ViewerSorter()
-			addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
-			// TODO: This is too static currently
-			input = ImportRackTables.loadDataCenters()
-		]
-	}
+  private def createControls(Composite parent) {
+    viewer = new TreeViewer(parent, flags(V_SCROLL)) => [
+      contentProvider = new TreeContentProvider()
+      labelProvider = new TreeContentLabelProvider()
+      sorter = new ViewerSorter()
+      addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
+      // TODO: This is too static currently
+      input = ImportRackTables.loadDataCenters()
+    ]
+  }
 
-	override getSelection() {
-		(viewer.selection as IStructuredSelection).firstElement
-	}
+  override getSelection() {
+    (viewer.selection as IStructuredSelection).firstElement
+  }
 
 }
 
 class TreeContentProvider implements ITreeContentProvider {
-	static val LOGGER = LoggerFactory.getLogger(TreeContentProvider)
 
-	override inputChanged(Viewer viewer, Object oldInput, Object newInput) {
-	}
+  override inputChanged(Viewer viewer, Object oldInput, Object newInput) {
+  }
 
-	override getChildren(Object parentElement) {
-		switch (parentElement) {
-			DataCenter: {
-				parentElement.racks.values
-			}
-			Rack: {
-				parentElement.contents.values
-			}
-			Content: {
-				#[
-					parentElement.attributes,
-					parentElement.ips,
-					parentElement.ports,
-					parentElement.spaces
-				]
-			}
-			,
-			default: {
-				if(parentElement instanceof Valueable) {
-					return parentElement.values
-				}
-				return null
-			}
-		}
-	}
+  override getChildren(Object parentElement) {
+    switch (parentElement) {
+      DataCenter: {
+        parentElement.racks.values
+      }
+      Rack: {
+        parentElement.contents.values
+      }
+      Content: {
+        #[
+          parentElement.attributes,
+          parentElement.ips,
+          parentElement.ports,
+          parentElement.spaces
+        ]
+      }
+      Valueable: {
+        parentElement.values
+      }
+      default: {
+        return null
+      }
+    }
+  }
 
-	override getElements(Object inputElement) {
-		inputElement.children
-	}
+  override getElements(Object inputElement) {
+    inputElement.children
+  }
 
-	override getParent(Object element) {
-		(element as Parentable).parent
-	}
+  override getParent(Object element) {
+    (element as Parentable).parent
+  }
 
-	override hasChildren(Object element) {
-		if(element == null) {
-			LOGGER.debug("hasChildren=null")
-			false
-		} else if (element.children == null) {
-			LOGGER.debug("hasChildren=null")	
-			false		
-		} else {
-			element.children.size > 0	
-		}
-	}
+  override hasChildren(Object element) {
+    element?.children?.size > 0
+  }
 
-	override dispose() {
-	}
+  override dispose() {
+  }
 
 }
 
 class TreeContentLabelProvider extends LabelProvider {
 
-	override getText(Object element) {
-		(element as Identable).ident
-	}
+  override getImage(Object element) {
+    val is = class.getResourceAsStream('/unknown.png')
+    try {
+      new Image(Display.getCurrent(), is)
+    } finally {
+      is.close()
+    }
+  }
+
+  override getText(Object element) {
+    switch (element) {
+      Identable: {
+        element.ident
+      }
+      default: {
+        element?.toString ?: ''
+      }
+    }
+  }
 
 }

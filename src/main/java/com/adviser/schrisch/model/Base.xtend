@@ -1,34 +1,74 @@
 package com.adviser.schrisch.model
 
+import java.lang.reflect.Field
 import java.util.LinkedList
 
 class Base<T> implements Identable, Parentable, Elementable {
-	var T parent = null
+  var T parent = null
 
-	def void setParent(T parent) {
-		this.parent = parent
-	}
+  def void setParent(T parent) {
+    this.parent = parent
+  }
 
-	override String getIdent() {
-		"" + hashCode
-	}
+  override String getIdent() {
+    "" + hashCode
+  }
 
-	override getParent() {
-		return parent
-	}
+  override getParent() {
+    return parent
+  }
 
-	override getElements() {
-		val ret = new LinkedList<Pair<String, Object>>()
-		this.class.declaredFields.forEach [ field |
-			val orig = field.accessible
-			field.accessible = true
-			val value = field.get(this)
-			if(!(value instanceof Valueable)) {
-				ret.add(field.name -> value)
-			}
-			field.accessible = orig
-		]
-		return ret
-	}
+  override getElements() {
+    new LinkedList<Pair<String, Object>>() => [ list |
+      class.declaredFields.forEach [ field |
+        val orig = field.accessible
+        try {
+          field.accessible = true
+          if(!(field.get(this) instanceof Valueable)) {
+            list.add(field.name -> new Base.ReflectedMutableObject(field, this))
+          }
+        } finally {
+          field.accessible = orig
+        }
+      ]
+    ]
+  }
+
+  public static class ReflectedMutableObject {
+
+    Field field
+
+    Object o
+
+    new(Field field, Object o) {
+      this.field = field
+      this.o = o
+    }
+
+    def get() {
+      val accessible = field.accessible
+      try {
+        field.accessible = true
+        field.get(o)
+      } finally {
+        field.accessible = accessible
+      }
+    }
+
+    def set(Object value) {
+      val accessible = field.accessible
+      try {
+        field.accessible = true
+        field.set(o, value)
+      } finally {
+        field.accessible = accessible
+      }
+    }
+
+    override toString() {
+      get()?.toString
+    }
+
+  }
 
 }
