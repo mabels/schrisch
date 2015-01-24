@@ -15,7 +15,7 @@ class DataCenter extends Base<DataCenters> {
 		if (name != null) {
 			name
 		} else {
-			"" + hashCode
+			name = "" + hashCode
 		}
 	}
 }

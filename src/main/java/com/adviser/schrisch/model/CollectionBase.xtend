@@ -1,6 +1,7 @@
 package com.adviser.schrisch.model
 
 import java.util.HashSet
+import java.util.Collection
 
 class CollectionBase<T, P> extends Base<P> implements Valueable {
 	
@@ -18,5 +19,7 @@ class CollectionBase<T, P> extends Base<P> implements Valueable {
 	override values() {
 		collection
 	}
-	
+	def Collection<T> valuesTyped() {
+		collection
+	}
 }

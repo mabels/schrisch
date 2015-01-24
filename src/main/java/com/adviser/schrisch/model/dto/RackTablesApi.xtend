@@ -58,7 +58,7 @@ class RackTablesApi {
 			in_content.findValue('has_problems').asBoolean,
 			in_content.findValue('id').asText
 		)
-		in_content.findValue('ports').map [ port |
+		in_content.findValue('ports').forEach[ port |
 			content.ports.add(new Port(
 					port.findValue('name').asText,
 					port.findValue('label').asText,
@@ -68,13 +68,13 @@ class RackTablesApi {
 					port.findValue('cable').asText))]
 
 
-		in_content.findValue('spaces').map [ space |
+		in_content.findValue('spaces').forEach [ space |
 			content.spaces.add(new Space(
 				space.findValue('unit_no').asText, 
 				space.findValue('atom').asText))]
 
 
-		in_content.findValue('ips').map [ ip |
+		in_content.findValue('ips').forEach [ ip |
 			content.ips.add(new Ip(
 					ip.findValue('version').asText,
 					ip.findValue('type').asText,
@@ -82,7 +82,7 @@ class RackTablesApi {
 					ip.findValue('name').asText,
 					ip.findValue('address').asText))]
 					
-		in_content.findValue('attributes').fieldNames.map [ fieldName |
+		in_content.findValue('attributes').fieldNames.forEach [ fieldName |
 			content.attributes.add(new Attribute(
 				fieldName, 
 				in_content.findValue('attributes').findValue(fieldName).asText

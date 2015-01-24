@@ -17,10 +17,12 @@ import org.eclipse.swt.widgets.Composite
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
+import org.slf4j.LoggerFactory
 
 class DataCentersTreeView implements SelectionProvider {
 
-	ApplicationContext applicationContext
+	
+	val ApplicationContext applicationContext
 
 	TreeViewer viewer
 
@@ -50,6 +52,7 @@ class DataCentersTreeView implements SelectionProvider {
 }
 
 class TreeContentProvider implements ITreeContentProvider {
+	static val LOGGER = LoggerFactory.getLogger(TreeContentProvider)
 
 	override inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 	}
@@ -89,7 +92,15 @@ class TreeContentProvider implements ITreeContentProvider {
 	}
 
 	override hasChildren(Object element) {
-		element.children.size > 0
+		if(element == null) {
+			LOGGER.debug("hasChildren=null")
+			false
+		} else if (element.children == null) {
+			LOGGER.debug("hasChildren=null")	
+			false		
+		} else {
+			element.children.size > 0	
+		}
 	}
 
 	override dispose() {
