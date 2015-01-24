@@ -1,14 +1,11 @@
 package com.adviser.schrisch.gui
 
-import com.adviser.schrisch.model.Content
-import com.adviser.schrisch.model.Rack
-import java.util.ArrayList
+import com.adviser.schrisch.model.Elementable
 import org.eclipse.jface.viewers.ColumnLabelProvider
 import org.eclipse.jface.viewers.IStructuredContentProvider
 import org.eclipse.jface.viewers.TableViewer
 import org.eclipse.jface.viewers.TableViewerColumn
 import org.eclipse.jface.viewers.Viewer
-import org.eclipse.jface.viewers.ViewerSorter
 import org.eclipse.swt.widgets.Composite
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
@@ -66,31 +63,10 @@ class TableContentProvider implements IStructuredContentProvider {
   }
 
   override getElements(Object inputElement) {
-    switch (inputElement) {
-      Rack: {
-        #[
-          'Comment' -> inputElement.comment,
-          'Height' -> inputElement.height,
-          'Name' -> inputElement.name,
-          'Row' -> inputElement.row
-        ]
-      }
-      Content: {
-        val result = new ArrayList<Pair<String, Object>>()
-        result += 'Asset Number' -> (inputElement.asset_no as Object)
-        result += 'Id' -> (inputElement.id as Object)
-        result += 'Label' -> (inputElement.label as Object)
-        result += 'Name' -> (inputElement.name as Object)
-        result += 'Tags' -> (inputElement.tags as Object)
-        result += 'Type' -> (inputElement.type as Object)
-        result += 'Problems' -> (Boolean.valueOf(inputElement.has_problems) as Object)
-        return result
-      }
-      default: {
-        #[]
-      }
-    }
+  	val ret = (inputElement as Elementable).elements
+  	return ret
   }
+				
 
   override dispose() {
   }
