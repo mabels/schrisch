@@ -1,31 +1,22 @@
 package com.adviser.schrisch.gui
 
 import java.io.File
-import java.io.IOException
-import java.net.InetSocketAddress
-import javax.servlet.ServletException
-import javax.servlet.http.HttpServletRequest
-import javax.servlet.http.HttpServletResponse
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.servlet.DefaultServlet
-import org.eclipse.jetty.servlet.ServletContextHandler
-import org.eclipse.jetty.servlet.ServletHolder
-import org.eclipse.rap.rwt.application.Application
-import org.eclipse.rap.rwt.application.ApplicationConfiguration
-import org.eclipse.rap.rwt.client.WebClient
-import org.eclipse.rap.rwt.engine.RWTServlet
-import org.eclipse.rap.rwt.engine.RWTServletContextListener
+import java.net.URL
+import java.net.URLClassLoader
 import org.kohsuke.args4j.CmdLineParser
 import org.kohsuke.args4j.Option
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
+import com.google.common.io.Resources
+import java.io.FileOutputStream
 
 class Main {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Main)
+  @Option(name='-h', aliases='--headless', usage='Start without ui')
+  boolean headless = false
 
   @Option(name='-p', aliases='--port', usage='The port to bind to', metaVar='PORT')
   int port = 23456
+
+  File temp
 
   def static void main(String[] args) {
     new Main(args)
@@ -37,47 +28,78 @@ class Main {
       parseArgument(args)
     ]
 
-    val server = new Server(InetSocketAddress.createUnresolved('0.0.0.0', port))
-    val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-    context.contextPath = '/'
-    context.resourceBase = new File(System.getProperty("java.io.tmpdir"), 'schrisch').absolutePath
-    context.setInitParameter(ApplicationConfiguration.CONFIGURATION_PARAM, Main.Configuration.name)
-    context.addEventListener(new RWTServletContextListener())
-    context.addServlet(new ServletHolder(new RWTServlet()), '/ui')
-    context.addServlet(new ServletHolder(new ExtendedDefaultServlet()), '/')
-    server.handler = context
-    server.start()
-    LOGGER.info('''Started server on 'http://0.0.0.0:«port»/' ''')
-    server.join()
+    temp = new File(System.getProperty("java.io.tmpdir"), 'schrisch')
+    temp.mkdirs()
+
+    if(true || headless) {
+      val server = server()
+      try {
+        Thread.currentThread.contextClassLoader = server.class.classLoader
+        server.start()
+      } finally {
+        server.stop()
+      }
+    } else {
+      val server = server()
+      val thread = new Thread [
+        Thread.currentThread.contextClassLoader = server.class.classLoader
+        server.start()
+      ]
+      thread.start()
+      Thread.sleep(2000)
+      try {
+        client().start()
+      } finally {
+        server.stop()
+      }
+      System.exit(0)
+    }
   }
 
-  static class Configuration implements ApplicationConfiguration {
+  def server() {
+    createClassLoader('swt-rwt.jar', 'swt-rwt-jface.jar').loadClass('''«class.package.name».Server''').
+      getConstructor(Integer.TYPE).newInstance(port)
+  }
 
-    override configure(Application application) {
-      application.addEntryPoint('/ui',
-        [
-          val context = new ApplicationContextImpl() => [
-            selectionManager = new SelectionManager()
-          ]
-          return new Layout(context)
-        ],
-        #{
-          WebClient.PAGE_TITLE -> 'schrisch - Schrank + Tisch',
-          WebClient.BODY_HTML -> '<b>...</b>'
-        })
+  def client() {
+    createClassLoader('swt-linux.jar').loadClass('''«class.package.name».Client''').getConstructor(Integer.TYPE).
+      newInstance(port)
+  }
+
+  private def createClassLoader(String... jars) {
+    val files = jars.map[new File(temp, it)]
+    files.forEach[Resources.copy(class.getResource('/lib/' + name), new FileOutputStream(it))]
+    val sysclasspath = System.getProperty('java.class.path').split(':').filter[!it.contains('rap')].map[
+      new URL('file:' + if(it.endsWith('.jar')) it else it + '/')]
+    new PluginClassLoader(files.map[it.toURI.toURL] + sysclasspath)
+  }
+
+  private def start(Object o) {
+    o.class.getMethod('start').invoke(o)
+  }
+
+  private def stop(Object o) {
+    o.class.getMethod('stop').invoke(o)
+  }
+
+  static class PluginClassLoader extends URLClassLoader {
+
+    new(URL[] urls) {
+      super(urls)
     }
 
-  }
-
-  static class ExtendedDefaultServlet extends DefaultServlet {
-
-    override protected doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-      val s = request.servletPath + (request.pathInfo ?: '')
-      if(s == '/') {
-        response.sendRedirect('/ui')
-      } else {
-        super.doGet(request, response)
+    override loadClass(String name) {
+      var loadedClass = findLoadedClass(name)
+      if(loadedClass == null) {
+        try {
+          loadedClass = findClass(name)
+        } catch(ClassNotFoundException e) {
+        }
+        if(loadedClass == null) {
+          loadedClass = super.loadClass(name)
+        }
       }
+      return loadedClass
     }
 
   }

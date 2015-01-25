@@ -1,8 +1,10 @@
 package com.adviser.schrisch.gui
 
+import com.adviser.schrisch.model.Base.ReflectedMutableObject
 import com.adviser.schrisch.model.Elementable
-import org.eclipse.jface.viewers.CellEditor
+import org.eclipse.jface.layout.TableColumnLayout
 import org.eclipse.jface.viewers.ColumnLabelProvider
+import org.eclipse.jface.viewers.ColumnWeightData
 import org.eclipse.jface.viewers.EditingSupport
 import org.eclipse.jface.viewers.IStructuredContentProvider
 import org.eclipse.jface.viewers.TableViewer
@@ -13,9 +15,6 @@ import org.eclipse.swt.widgets.Composite
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
-import com.adviser.schrisch.model.Base.ReflectedMutableObject
-import org.eclipse.jface.layout.TableColumnLayout
-import org.eclipse.jface.viewers.ColumnWeightData
 
 class PropertiesEditor implements SelectionListener {
 
@@ -25,8 +24,6 @@ class PropertiesEditor implements SelectionListener {
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
-
-    // TODO: dispose listener
     this.applicationContext.selectionManager.addSelectionListener(this)
     createControls(parent)
   }
@@ -34,6 +31,9 @@ class PropertiesEditor implements SelectionListener {
   private def createControls(Composite parent) {
     val layout = new TableColumnLayout()
     newComposite(parent, flags(NONE), layout) => [
+      addDisposeListener[
+        applicationContext.selectionManager.removeSelectionListener(this)
+      ]
       viewer = new TableViewer(it, flags(H_SCROLL, V_SCROLL, H_SCROLL, FULL_SELECTION)) => [
         val viewer = it
         table.headerVisible = true
@@ -84,19 +84,16 @@ class TableContentProvider implements IStructuredContentProvider {
 
 class StringValueEditingSupport extends EditingSupport {
 
-  CellEditor editor
-
   new(TableViewer viewer) {
     super(viewer)
-    editor = new TextCellEditor(viewer.table)
   }
 
   override protected canEdit(Object element) {
-    true
+    (element as Pair<String, Object>).value instanceof ReflectedMutableObject
   }
 
   override protected getCellEditor(Object element) {
-    editor
+    new TextCellEditor(viewer.control as Composite)
   }
 
   override protected getValue(Object element) {

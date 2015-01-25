@@ -3,8 +3,10 @@ package com.adviser.schrisch.gui
 import org.eclipse.swt.custom.SashForm
 import org.eclipse.swt.events.SelectionAdapter
 import org.eclipse.swt.events.SelectionEvent
+import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Display
 
 class SWTExtensions {
 
@@ -37,6 +39,15 @@ class SWTExtensions {
           handler.apply(e)
         }
       });
+  }
+
+  def static newImage(String path) {
+    val is = SWTExtensions.getResourceAsStream(path)
+    try {
+      new Image(Display.getCurrent(), is)
+    } finally {
+      is.close()
+    }
   }
 
 }

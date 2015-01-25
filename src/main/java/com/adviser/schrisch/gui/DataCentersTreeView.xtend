@@ -1,10 +1,13 @@
 package com.adviser.schrisch.gui
 
 import com.adviser.schrisch.ImportRackTables
+import com.adviser.schrisch.model.Attributes
 import com.adviser.schrisch.model.Content
 import com.adviser.schrisch.model.DataCenter
 import com.adviser.schrisch.model.Identable
+import com.adviser.schrisch.model.Ips
 import com.adviser.schrisch.model.Parentable
+import com.adviser.schrisch.model.Ports
 import com.adviser.schrisch.model.Rack
 import com.adviser.schrisch.model.Valueable
 import org.eclipse.jface.viewers.IStructuredSelection
@@ -13,9 +16,7 @@ import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.viewers.Viewer
 import org.eclipse.jface.viewers.ViewerSorter
-import org.eclipse.swt.graphics.Image
 import org.eclipse.swt.widgets.Composite
-import org.eclipse.swt.widgets.Display
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
@@ -29,7 +30,6 @@ class DataCentersTreeView implements SelectionProvider {
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
 
-    // TODO: cleanup on dispose
     this.applicationContext.selectionManager.provider = this
     createControls(parent)
   }
@@ -42,7 +42,12 @@ class DataCentersTreeView implements SelectionProvider {
       addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
       // TODO: This is too static currently
       input = ImportRackTables.loadDataCenters()
+      tree.addDisposeListener[dispose()]
     ]
+  }
+
+  private def dispose() {
+    this.applicationContext.selectionManager.provider = null
   }
 
   override getSelection() {
@@ -58,26 +63,21 @@ class TreeContentProvider implements ITreeContentProvider {
 
   override getChildren(Object parentElement) {
     switch (parentElement) {
-      DataCenter: {
+      DataCenter:
         parentElement.racks.values
-      }
-      Rack: {
+      Rack:
         parentElement.contents.values
-      }
-      Content: {
+      Content:
         #[
           parentElement.attributes,
           parentElement.ips,
           parentElement.ports,
           parentElement.spaces
         ]
-      }
-      Valueable: {
+      Valueable:
         parentElement.values
-      }
-      default: {
+      default:
         return null
-      }
     }
   }
 
@@ -101,22 +101,30 @@ class TreeContentProvider implements ITreeContentProvider {
 class TreeContentLabelProvider extends LabelProvider {
 
   override getImage(Object element) {
-    val is = class.getResourceAsStream('/unknown.png')
-    try {
-      new Image(Display.getCurrent(), is)
-    } finally {
-      is.close()
+    switch (element) {
+      DataCenter:
+        newImage('/building.png')
+      Rack:
+        newImage('/server.png')
+      Content:
+        newImage('/drive.png')
+      Attributes:
+        newImage('/table.png')
+      Ports:
+        newImage('/connect.png')
+      Ips:
+        newImage('/link.png')
+      default:
+        null
     }
   }
 
   override getText(Object element) {
     switch (element) {
-      Identable: {
+      Identable:
         element.ident
-      }
-      default: {
+      default:
         element?.toString ?: ''
-      }
     }
   }
 

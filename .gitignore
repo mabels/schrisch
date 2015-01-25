@@ -3,3 +3,4 @@ config.yaml
 .classpath
 /target/
 /bin/
+dependency-reduced-pom.xml
