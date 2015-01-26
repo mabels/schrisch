@@ -2,14 +2,17 @@ package com.adviser.schrisch.model
 
 import java.lang.reflect.Field
 import java.util.LinkedList
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 class Base<T> implements Identable, Parentable, Elementable {
+  @JsonIgnore
   var T parent = null
 
   def void setParent(T parent) {
     this.parent = parent
   }
 
+  @JsonIgnore
   override String getIdent() {
     "" + hashCode
   }
@@ -18,6 +21,7 @@ class Base<T> implements Identable, Parentable, Elementable {
     return parent
   }
 
+  @JsonIgnore
   override getElements() {
     new LinkedList<Pair<String, Object>>() => [ list |
       class.declaredFields.forEach [ field |

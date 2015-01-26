@@ -14,6 +14,9 @@ interface ApplicationContext {
 
   def Runnable getDoSave()
 
+  def void setDoApiLoad(Runnable action)
+
+  def Runnable getDoApiLoad()
 }
 
 class ApplicationContextImpl implements ApplicationContext {
@@ -27,4 +30,6 @@ class ApplicationContextImpl implements ApplicationContext {
   @Accessors
   Runnable doSave
 
+  @Accessors
+  Runnable doApiLoad
 }

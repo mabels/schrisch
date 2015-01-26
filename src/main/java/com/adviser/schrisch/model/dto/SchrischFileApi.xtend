@@ -7,6 +7,10 @@ import java.io.FileOutputStream
 import java.util.LinkedList
 import org.slf4j.LoggerFactory
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import java.io.FileFilter
+import com.adviser.schrisch.model.DataCenter
+import com.adviser.schrisch.model.Rack
+import com.adviser.schrisch.model.Content
 
 class SchrischFileApi {
 	static val LOGGER = LoggerFactory.getLogger(SchrischFileApi)
@@ -26,15 +30,87 @@ class SchrischFileApi {
 	def static write(DataCenters dcs) {
 		val yf = new ObjectMapper(new YAMLFactory())
 		dcs.valuesTyped.forEach [ dc |
-			writeYaml(yf, dc, dc.ident, dc.ident, '''«dc.ident».datacenter''')
+			writeYaml(yf, dc, dc.ident, '''«dc.ident».datacenter''')
 			dc.racks.valuesTyped.forEach [ rack |
 				writeYaml(yf, rack, dc.ident, rack.ident, '''«rack.ident».rack''')
 				rack.contents.valuesTyped.forEach [ content |
 					LOGGER.debug("ident=" + content.ident)
-					writeYaml(yf, content, content.ident, dc.ident, rack.ident, '''«content.ident».rack''')
+					writeYaml(yf, content, dc.ident, rack.ident, '''«content.ident».content''')
 				]
 			]
 		]
 	}
+
+	def static readRack(ObjectMapper yf, File rackDir) {
+		val rackFiles = rackDir.listFiles(
+			new FileFilter() {
+				override accept(File pathname) {
+					pathname.file && pathname.absolutePath.endsWith(".rack")
+				}
+
+			})
+		if (rackFiles != 1) {
+			LOGGER.error("can't read directory structure missing or to much .rack:" + rackDir.absolutePath);
+			return null
+		}
+		val rack = yf.readValue(rackFiles.get(0), Rack)
+		rackDir.listFiles(
+			new FileFilter() {
+				override accept(File pathname) {
+					pathname.file && pathname.absolutePath.endsWith(".content")
+				}
+
+			}).forEach[ contentFile |
+				rack.contents.add(yf.readValue(contentFile, Content))
+			]
+		return rack
+	}
 	
+	def static readDataCenter(ObjectMapper yf, File dataCenterDir) {
+		val files = dataCenterDir.listFiles(
+			new FileFilter() {
+				override accept(File pathname) {
+					pathname.file && pathname.absolutePath.endsWith(".datacenter")
+				}
+
+			})
+		if(files.size != 1) {
+			LOGGER.error("can't read directory structure missing or to much .datacenter:" + dataCenterDir.absolutePath);
+			return null
+		}
+		
+		val dataCenter = yf.readValue(files.get(0), DataCenter)
+		dataCenterDir.listFiles(new FileFilter() {
+			
+			override accept(File pathname) {
+				pathname.isDirectory
+			}
+			
+		}).forEach[ rackDir |
+			val rack = readRack(yf, rackDir)
+			if (rack != 0) {
+				dataCenter.racks.add(rack)
+			}
+		]
+		dataCenter
+	}
+
+	def static read() {
+		val yf = new ObjectMapper(new YAMLFactory())
+		val root = new File("./schrisch")
+		val dataCenters = new DataCenters()
+		root.listFiles(new FileFilter() {
+				override accept(File pathname) {
+					pathname.isDirectory
+				}
+
+		}).forall [ file |
+			val dataCenter = readDataCenter(yf, file)
+			if (dataCenter != null) {
+				dataCenters.add(dataCenter)
+			}
+		]
+		return dataCenters
+	}
+
 }

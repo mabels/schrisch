@@ -32,6 +32,7 @@ class Workbench {
       new ToolBarManager() => [ bar |
         bar.add(new ToolbarAction('/arrow_refresh.png')[applicationContext.doLoad?.run()])
         bar.add(new ToolbarAction('/disk.png')[applicationContext.doSave?.run()])
+        bar.add(new ToolbarAction('/server.png')[applicationContext.doApiLoad?.run()])
         bar.createControl(it)
       ]
       newSashForm(it, flags(HORIZONTAL, BORDER)) => [

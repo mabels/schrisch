@@ -20,6 +20,7 @@ import org.eclipse.swt.widgets.Composite
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
+import com.adviser.schrisch.model.DataCenters
 
 class DataCentersTreeView implements SelectionProvider {
 
@@ -32,12 +33,17 @@ class DataCentersTreeView implements SelectionProvider {
 
     this.applicationContext.selectionManager.provider = this
     this.applicationContext.doLoad = [
-      val selection = viewer.selection
       viewer.input = ImportRackTables.loadDataCenters()
+      val selection = viewer.selection
       viewer.setSelection(selection, true)
     ]
     this.applicationContext.doSave = [
-      ImportRackTables.saveDataCenters()
+      ImportRackTables.saveDataCenters(viewer.input as DataCenters)
+    ]
+    this.applicationContext.doApiLoad = [
+      viewer.input = ImportRackTables.apiLoadDataCenters()
+      val selection = viewer.selection
+      viewer.setSelection(selection, true)
     ]
     createControls(parent)
   }

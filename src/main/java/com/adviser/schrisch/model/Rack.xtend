@@ -2,6 +2,7 @@ package com.adviser.schrisch.model
 
 import com.adviser.schrisch.Utils
 import org.eclipse.xtend.lib.annotations.Accessors
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 @Accessors
 class Rack extends Base<DataCenter> implements Cloneable {
@@ -10,6 +11,7 @@ class Rack extends Base<DataCenter> implements Cloneable {
   String comment
   String row
 
+  @JsonIgnore
   val contents = new Contents(this)
 
   new(String name, int height, String comment, String row) {

@@ -2,6 +2,7 @@ package com.adviser.schrisch
 
 import com.adviser.schrisch.model.dto.RackTablesApi
 import com.adviser.schrisch.model.dto.SchrischFileApi
+import com.adviser.schrisch.model.DataCenters
 
 class ImportRackTables {
 
@@ -11,11 +12,16 @@ class ImportRackTables {
   }
 
   def static loadDataCenters() {
+  	return SchrischFileApi.read()
+  }
+  
+  def static apiLoadDataCenters() {
     val config = Config.load
     return RackTablesApi.loadFromRackTables(config)
   }
   
-  def static saveDataCenters() {
+  def static saveDataCenters(DataCenters dataCenters) {
+  	SchrischFileApi.write(dataCenters)
   }
 
 }

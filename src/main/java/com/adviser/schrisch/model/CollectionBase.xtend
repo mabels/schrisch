@@ -10,6 +10,9 @@ class CollectionBase<T, P> extends Base<P> implements Valueable {
 	}
 
 	val collection = new HashSet<T>()
+	def getCollection() {
+		return collection
+	}
 
 	def add(T type) {
 		

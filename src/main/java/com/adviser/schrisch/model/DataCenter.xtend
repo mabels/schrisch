@@ -1,6 +1,7 @@
 package com.adviser.schrisch.model
 
 import org.eclipse.xtend.lib.annotations.Accessors
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 @Accessors
 class DataCenter extends Base<DataCenters> {
@@ -9,7 +10,7 @@ class DataCenter extends Base<DataCenters> {
   String zipCode
   String city
   String country
-  val racks = new Racks(this)
+  @JsonIgnore val racks = new Racks(this)
 
   override getIdent() {
     if(name != null) {
