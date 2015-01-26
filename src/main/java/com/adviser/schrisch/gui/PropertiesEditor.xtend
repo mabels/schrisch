@@ -3,6 +3,7 @@ package com.adviser.schrisch.gui
 import com.adviser.schrisch.model.Base.ReflectedMutableObject
 import com.adviser.schrisch.model.Elementable
 import org.eclipse.jface.layout.TableColumnLayout
+import org.eclipse.jface.viewers.CheckboxCellEditor
 import org.eclipse.jface.viewers.ColumnLabelProvider
 import org.eclipse.jface.viewers.ColumnWeightData
 import org.eclipse.jface.viewers.EditingSupport
@@ -88,26 +89,38 @@ class StringValueEditingSupport extends EditingSupport {
     super(viewer)
   }
 
+  private def getMutable(Object element) {
+    val value = (element as Pair<String, Object>).value
+    return if(value instanceof ReflectedMutableObject)
+      value
+    else
+      null
+  }
+
   override protected canEdit(Object element) {
-    (element as Pair<String, Object>).value instanceof ReflectedMutableObject
+    element.mutable !== null
   }
 
   override protected getCellEditor(Object element) {
-    new TextCellEditor(viewer.control as Composite)
+    val item = element.mutable
+    if(item.type === String)
+      new TextCellEditor(viewer.control as Composite)
+    else if(item.type === Boolean.TYPE)
+      new CheckboxCellEditor(viewer.control as Composite)
   }
 
   override protected getValue(Object element) {
-    val item = (element as Pair<String, Object>).value
-    if(item instanceof ReflectedMutableObject) {
-      item.get?.toString
+    val item = element.mutable
+    if(item !== null) {
+      item.get ?: ''
     } else {
-      item?.toString
+      (element as Pair<String, Object>).value ?: ''
     }
   }
 
   override protected setValue(Object element, Object value) {
-    val item = (element as Pair<String, Object>).value
-    if(item instanceof ReflectedMutableObject) {
+    val item = element.mutable
+    if(item !== null) {
       item.set(value)
       viewer.refresh(element)
     }

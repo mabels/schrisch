@@ -1,22 +1,20 @@
 package com.adviser.schrisch.gui
 
-import org.eclipse.jface.action.CoolBarManager
-import org.eclipse.jface.action.IToolBarManager
+import org.eclipse.jface.action.Action
 import org.eclipse.jface.action.ToolBarManager
 import org.eclipse.jface.layout.GridDataFactory
 import org.eclipse.jface.layout.GridLayoutFactory
+import org.eclipse.jface.resource.ImageDescriptor
 import org.eclipse.swt.layout.FillLayout
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.xtend.lib.annotations.Accessors
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
-import org.eclipse.jface.action.ICoolBarManager
 
 class Workbench {
 
-  @Accessors(PUBLIC_GETTER)
-  IToolBarManager toolbar
+  ApplicationContext applicationContext
 
   @Accessors(PUBLIC_GETTER)
   Composite left
@@ -24,13 +22,16 @@ class Workbench {
   @Accessors(PUBLIC_GETTER)
   Composite bottom
 
-  new(Composite parent) {
+  new(ApplicationContext applicationContext, Composite parent) {
+    this.applicationContext = applicationContext
     createControls(parent)
   }
 
   private def createControls(Composite parent) {
     newComposite(parent, flags(NONE), GridLayoutFactory.fillDefaults.create()) => [
-      toolbar = new ToolBarManager() => [ bar |
+      new ToolBarManager() => [ bar |
+        bar.add(new ToolbarAction('/arrow_refresh.png')[applicationContext.doLoad?.run()])
+        bar.add(new ToolbarAction('/disk.png')[applicationContext.doSave?.run()])
         bar.createControl(it)
       ]
       newSashForm(it, flags(HORIZONTAL, BORDER)) => [
@@ -44,6 +45,22 @@ class Workbench {
         weights = #[1, 5]
       ]
     ]
+  }
+
+  static class ToolbarAction extends Action {
+
+    ()=>void callback
+
+    new(String image, ()=>void callback) {
+      super()
+      this.callback = callback
+      imageDescriptor = ImageDescriptor.createFromURL(class.getResource(image))
+    }
+
+    override run() {
+      callback.apply()
+    }
+
   }
 
 }

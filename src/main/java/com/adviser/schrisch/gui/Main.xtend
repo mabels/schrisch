@@ -31,7 +31,7 @@ class Main {
     temp = new File(System.getProperty("java.io.tmpdir"), 'schrisch')
     temp.mkdirs()
 
-    if(true || headless) {
+    if(headless) {
       val server = server()
       try {
         Thread.currentThread.contextClassLoader = server.class.classLoader

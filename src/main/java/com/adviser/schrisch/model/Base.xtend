@@ -44,6 +44,10 @@ class Base<T> implements Identable, Parentable, Elementable {
       this.field = field
       this.o = o
     }
+    
+    def type() {
+      field.type
+    }
 
     def get() {
       val accessible = field.accessible

@@ -14,5 +14,8 @@ class ImportRackTables {
     val config = Config.load
     return RackTablesApi.loadFromRackTables(config)
   }
+  
+  def static saveDataCenters() {
+  }
 
 }

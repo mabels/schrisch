@@ -31,6 +31,14 @@ class DataCentersTreeView implements SelectionProvider {
     this.applicationContext = applicationContext
 
     this.applicationContext.selectionManager.provider = this
+    this.applicationContext.doLoad = [
+      val selection = viewer.selection
+      viewer.input = ImportRackTables.loadDataCenters()
+      viewer.setSelection(selection, true)
+    ]
+    this.applicationContext.doSave = [
+      ImportRackTables.saveDataCenters()
+    ]
     createControls(parent)
   }
 
@@ -40,10 +48,9 @@ class DataCentersTreeView implements SelectionProvider {
       labelProvider = new TreeContentLabelProvider()
       sorter = new ViewerSorter()
       addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
-      // TODO: This is too static currently
-      input = ImportRackTables.loadDataCenters()
       tree.addDisposeListener[dispose()]
     ]
+    this.applicationContext.doLoad.run()
   }
 
   private def dispose() {
