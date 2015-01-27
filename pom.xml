@@ -54,13 +54,11 @@
       <groupId>org.eclipse.rap</groupId>
       <artifactId>org.eclipse.rap.rwt</artifactId>
       <version>2.3.1</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.rap</groupId>
       <artifactId>org.eclipse.rap.jface</artifactId>
       <version>2.3.1</version>
-      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.eclipse.core</groupId>
@@ -202,45 +200,6 @@
           <target>1.7</target>
           <encoding>${project.build.sourceEncoding}</encoding>
         </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.9</version>
-        <executions>
-          <execution>
-            <id>copy</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-<!--                 <artifactItem> -->
-<!--                   <groupId>org.eclipse.swt.org.eclipse.swt.gtk.linux.x86_64.4.3.swt</groupId> -->
-<!--                   <artifactId>org.eclipse.swt.gtk.linux.x86_64</artifactId> -->
-<!--                   <version>4.3</version> -->
-<!--                   <destFileName>swt-linux.jar</destFileName> -->
-<!--                 </artifactItem> -->
-                <artifactItem>
-                  <groupId>org.eclipse.rap</groupId>
-                  <artifactId>org.eclipse.rap.rwt</artifactId>
-                  <version>2.3.1</version>
-                  <destFileName>swt-rwt.jar</destFileName>
-                </artifactItem>
-                <artifactItem>
-                  <groupId>org.eclipse.rap</groupId>
-                  <artifactId>org.eclipse.rap.jface</artifactId>
-                  <version>2.3.1</version>
-                  <destFileName>swt-rwt-jface.jar</destFileName>
-                </artifactItem>
-              </artifactItems>
-              <outputDirectory>${project.build.directory}/classes/lib</outputDirectory>
-              <overWriteReleases>false</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

@@ -8,6 +8,8 @@ import org.eclipse.swt.widgets.Button
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Display
 
+import static extension com.adviser.schrisch.Utils.*
+
 class SWTExtensions {
 
   def static flags(int... flags) {
@@ -42,12 +44,9 @@ class SWTExtensions {
   }
 
   def static newImage(String path) {
-    val is = SWTExtensions.getResourceAsStream(path)
-    try {
-      new Image(Display.getCurrent(), is)
-    } finally {
-      is.close()
-    }
+    SWTExtensions.getResourceAsStream(path).transform [
+      new Image(Display.getCurrent(), it)
+    ]
   }
 
 }

@@ -20,6 +20,9 @@ class Workbench {
   Composite left
 
   @Accessors(PUBLIC_GETTER)
+  Composite center
+
+  @Accessors(PUBLIC_GETTER)
   Composite bottom
 
   new(ApplicationContext applicationContext, Composite parent) {
@@ -39,7 +42,7 @@ class Workbench {
         layoutData = GridDataFactory.fillDefaults.grab(true, true).create()
         left = newComposite(it, flags(NONE), new FillLayout)
         newSashForm(it, flags(VERTICAL, BORDER)) => [
-          newComposite(it, flags(NONE), new FillLayout)
+          center = newComposite(it, flags(NONE), new FillLayout)
           bottom = newComposite(it, flags(NONE), new FillLayout)
           weights = #[5, 1]
         ]

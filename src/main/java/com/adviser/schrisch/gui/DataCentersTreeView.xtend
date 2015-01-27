@@ -56,7 +56,7 @@ class DataCentersTreeView implements SelectionProvider {
       addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
       tree.addDisposeListener[dispose()]
     ]
-    this.applicationContext.doLoad.run()
+    applicationContext.doLoad.run()
   }
 
   private def dispose() {

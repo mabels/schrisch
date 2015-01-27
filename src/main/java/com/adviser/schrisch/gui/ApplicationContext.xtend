@@ -4,6 +4,8 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 interface ApplicationContext {
 
+  def Runnable getStopOnCloseCallback()
+
   def SelectionManager getSelectionManager()
 
   def void setDoLoad(Runnable action)
@@ -20,6 +22,9 @@ interface ApplicationContext {
 }
 
 class ApplicationContextImpl implements ApplicationContext {
+
+  @Accessors
+  Runnable stopOnCloseCallback
 
   @Accessors
   SelectionManager selectionManager

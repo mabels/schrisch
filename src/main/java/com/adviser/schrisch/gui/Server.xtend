@@ -23,13 +23,25 @@ class Server {
 
   int port
 
-  org.eclipse.jetty.server.Server server
+  static Runnable stopOnCloseCallback
 
-  new(int port) {
+  static org.eclipse.jetty.server.Server server
+
+  new(int port, boolean stopOnCloseEnabled) {
     this.port = port
+    if(stopOnCloseEnabled) {
+      stopOnCloseCallback = [
+        val t = new Thread [
+          Thread.sleep(1000)
+          server.stop()
+        ]
+        t.daemon = true
+        t.start()
+      ]
+    }
   }
 
-  def start() {
+  def start(()=>void afterStartCallback) {
     server = new org.eclipse.jetty.server.Server(InetSocketAddress.createUnresolved('0.0.0.0', port))
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
     context.contextPath = '/'
@@ -41,6 +53,7 @@ class Server {
     server.handler = context
     server.start()
     LOGGER.info('''Started server on 'http://0.0.0.0:«port»/' ''')
+    afterStartCallback?.apply()
     server.join()
   }
 
@@ -54,6 +67,7 @@ class Server {
       application.addEntryPoint('/ui',
         [
           val context = new ApplicationContextImpl() => [
+            it.stopOnCloseCallback = stopOnCloseCallback
             selectionManager = new SelectionManager()
           ]
           return new Layout(context)
