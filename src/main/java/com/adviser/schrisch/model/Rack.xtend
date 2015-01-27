@@ -14,6 +14,9 @@ class Rack extends Base<DataCenter> implements Cloneable {
   @JsonIgnore
   val contents = new Contents(this)
 
+  new() {  	
+  }
+  
   new(String name, int height, String comment, String row) {
     this.name = name
     this.height = "" + height

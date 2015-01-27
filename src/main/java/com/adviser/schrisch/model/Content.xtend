@@ -18,6 +18,8 @@ class Content extends Base<Contents> {
   val ips = new Ips(this)
   val attributes = new Attributes(this)
 
+  new() {
+  }
   new(String name, String label, String asset_no, String type, String tags, boolean has_problems, String id) {
     this.name = name
     this.label = label
