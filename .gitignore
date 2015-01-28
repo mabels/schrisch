@@ -1,4 +1,5 @@
 config.yaml
+*~.skp
 .project
 .classpath
 /target/
