@@ -4,13 +4,13 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 @Accessors
-class DataCenter extends Base<DataCenters> {
+class DataCenter extends Base {
   String name
   String street
   String zipCode
   String city
   String country
-  @JsonIgnore val racks = new Racks(this)
+  @JsonIgnore val racks = new Racks()
 
   override getIdent() {
     if(name != null) {

@@ -47,9 +47,8 @@ class RackTablesApi {
 		objectMapper.readValue(response.content, JsonNode);
 	}
 
-	
-	def load_content_from_racktables(JsonNode in_content) {	
-		val content = new Content(
+	def load_content_from_racktables(JsonNode in_content) {
+		val content = Content.create(
 			in_content.findValue('name').asText,
 			in_content.findValue('label').asText,
 			in_content.findValue('asset_no').asText,
@@ -58,45 +57,33 @@ class RackTablesApi {
 			in_content.findValue('has_problems').asBoolean,
 			in_content.findValue('id').asText
 		)
-		in_content.findValue('ports').forEach[ port |
-			content.ports.add(new Port(
-					port.findValue('name').asText,
-					port.findValue('label').asText,
-					port.findValue('type').asText,
-					port.findValue('remote_port').asText,
-					port.findValue('l2address').asText,
-					port.findValue('cable').asText))]
+		in_content.findValue('ports').forEach[port|
+			content.ports.add(
+				Port.create(port.findValue('name').asText, port.findValue('label').asText,
+					port.findValue('type').asText, port.findValue('remote_port').asText,
+					port.findValue('l2address').asText, port.findValue('cable').asText))]
 
+		in_content.findValue('spaces').forEach[space|
+			content.spaces.add(Space.create(space.findValue('unit_no').asText, space.findValue('atom').asText))]
 
-		in_content.findValue('spaces').forEach [ space |
-			content.spaces.add(new Space(
-				space.findValue('unit_no').asText, 
-				space.findValue('atom').asText))]
-
-
-		in_content.findValue('ips').forEach [ ip |
-			content.ips.add(new Ip(
-					ip.findValue('version').asText,
-					ip.findValue('type').asText,
+		in_content.findValue('ips').forEach[ip|
+			content.ips.add(
+				Ip.create(ip.findValue('version').asText, ip.findValue('type').asText,
 					ip.findValue('ip').findValue('address').asText + "/" + ip.findValue('ip').findValue('prefix'),
-					ip.findValue('name').asText,
-					ip.findValue('address').asText))]
-					
-		in_content.findValue('attributes').fieldNames.forEach [ fieldName |
-			content.attributes.add(new Attribute(
-				fieldName, 
-				in_content.findValue('attributes').findValue(fieldName).asText
-			))]
+					ip.findValue('name').asText, ip.findValue('address').asText))]
+
+		in_content.findValue('attributes').fieldNames.forEach[fieldName|
+			content.attributes.add(
+				Attribute.create(
+					fieldName,
+					in_content.findValue('attributes').findValue(fieldName).asText
+				))]
 		return content
 	}
 
 	def load_from_rack_racktables(JsonNode in_rack) {
-		val name = in_rack.findValue('name').asText
-		val height = in_rack.findValue('height').asInt
-		val comment = in_rack.findValue('comment').asText
-		val row = in_rack.findValue('row').asText
-		val contents = new HashMap<String, Content>()
-		val rack = new Rack(name, height, comment, row)
+		val rack = Rack.create(in_rack.findValue('name').asText, in_rack.findValue('height').asInt,
+			in_rack.findValue('comment').asText, in_rack.findValue('row').asText)
 
 		request(in_rack.findValue('content').findValue('__ref__').asText).forEach [ in_content |
 			rack.contents.add(load_content_from_racktables(in_content))
@@ -104,23 +91,17 @@ class RackTablesApi {
 		return rack
 	}
 
-	def
-
-static loadFromRackTables(Config config) {
+	def static loadFromRackTables(Config config) {
 		(new RackTablesApi(config)).load_datacenters(config)
 	}
-	
-	def load_datacenters(Config config) {	
+
+	def load_datacenters(Config config) {
 		val dataCenters = new DataCenters()
-		val dataCenter = new DataCenter()
-		dataCenters.add(dataCenter)
-	
+		val dataCenter = dataCenters.add(new DataCenter())
 		request("/rack").forEach [ in_rack |
 			dataCenter.racks.add(load_from_rack_racktables(in_rack))
 		]
 		return dataCenters
 	}
-	
-	
 
 }

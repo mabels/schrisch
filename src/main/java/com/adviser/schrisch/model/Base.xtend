@@ -4,13 +4,10 @@ import java.lang.reflect.Field
 import java.util.LinkedList
 import com.fasterxml.jackson.annotation.JsonIgnore
 
-class Base<T> implements Identable, Parentable, Elementable {
+class Base implements Identable, Parentable, Elementable {
   @JsonIgnore
-  var T parent = null
+  var Object _parent = null
 
-  def void setParent(T parent) {
-    this.parent = parent
-  }
 
   @JsonIgnore
   override String getIdent() {
@@ -18,7 +15,11 @@ class Base<T> implements Identable, Parentable, Elementable {
   }
 
   override getParent() {
-    return parent
+    return _parent
+  }
+
+  override void setParent(Object parent) {
+    this._parent = parent
   }
 
   @JsonIgnore
@@ -79,4 +80,5 @@ class Base<T> implements Identable, Parentable, Elementable {
 
   }
 
+	
 }

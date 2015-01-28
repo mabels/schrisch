@@ -3,18 +3,20 @@ package com.adviser.schrisch.model
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors
-class Ip {
+class Ip extends Base {
 	String version
 	String type
 	String ip
 	String name
 	String address
 	
-	new(String version, String type, String ip, String name, String address) {
-		this.version = version
-		this.type = type
-		this.ip = ip
-		this.name = name
-		this.address = address
+	static def create(String version, String type, String ip, String name, String address) {
+		val my = new Ip()
+		my.version = version
+		my.type = type
+		my.ip = ip
+		my.name = name
+		my.address = address
+		return my
 	}
 }

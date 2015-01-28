@@ -4,7 +4,7 @@ import com.adviser.schrisch.Utils
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors
-class Content extends Base<Contents> {
+class Content extends Base {
   String name
   String label
   String asset_no
@@ -13,21 +13,22 @@ class Content extends Base<Contents> {
   boolean has_problems
   String id
 
-  val spaces = new Spaces(this)
-  val ports = new Ports(this)
-  val ips = new Ips(this)
-  val attributes = new Attributes(this)
+  var Spaces spaces = new Spaces
+  var Ports ports = new Ports
+  var Ips ips = new Ips
+  var Attributes attributes = new Attributes
 
-  new() {
-  }
-  new(String name, String label, String asset_no, String type, String tags, boolean has_problems, String id) {
-    this.name = name
-    this.label = label
-    this.asset_no = asset_no
-    this.type = type
-    this.tags = tags
-    this.has_problems = has_problems
-    this.id = id
+  
+  static def create(String name, String label, String asset_no, String type, String tags, boolean has_problems, String id) {
+    val ct = new Content()
+    ct.name = name
+    ct.label = label
+    ct.asset_no = asset_no
+    ct.type = type
+    ct.tags = tags
+    ct.has_problems = has_problems
+    ct.id = id
+    return ct
   }
 
   override getIdent() {

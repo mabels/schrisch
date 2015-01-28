@@ -3,11 +3,7 @@ package com.adviser.schrisch.model
 import java.util.HashSet
 import java.util.Collection
 
-class CollectionBase<T, P> extends Base<P> implements Valueable {
-
-	new(P parent) {
-		this.parent = parent
-	}
+class CollectionBase<T extends Parentable, P> extends Base implements Valueable {
 
 	val collection = new HashSet<T>()
 
@@ -16,8 +12,9 @@ class CollectionBase<T, P> extends Base<P> implements Valueable {
 	}
 
 	def add(T type) {
-
+		type.setParent(parent)
 		collection.add(type)
+		return type
 	}
 
 	def +=(T type) {

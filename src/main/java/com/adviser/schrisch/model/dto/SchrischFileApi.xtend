@@ -70,7 +70,7 @@ class SchrischFileApi {
 		return rack
 	}
 	
-	def static readDataCenter(ObjectMapper yf, File dataCenterDir) {
+	def static readDataCenter(ObjectMapper yf, File dataCenterDir, DataCenters parent) {
 		val files = dataCenterDir.listFiles(
 			new FileFilter() {
 				override accept(File pathname) {
@@ -84,6 +84,7 @@ class SchrischFileApi {
 		}
 		
 		val dataCenter = yf.readValue(files.get(0), DataCenter)
+		dataCenter.parent = parent
 		dataCenterDir.listFiles(new FileFilter() {
 			
 			override accept(File pathname) {
@@ -104,7 +105,7 @@ class SchrischFileApi {
 		val dataCenters = new DataCenters()
 		val root = new File("./schrisch")
 		if (root.exists) {
-			dataCenters += root.listFiles[it.isDirectory].map[file | readDataCenter(yf, file)].filterNull
+			dataCenters += root.listFiles[it.isDirectory].map[file | readDataCenter(yf, file, dataCenters)].filterNull
 		}
 		return dataCenters
 	}

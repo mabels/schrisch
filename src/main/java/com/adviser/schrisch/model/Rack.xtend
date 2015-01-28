@@ -5,23 +5,22 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import com.fasterxml.jackson.annotation.JsonIgnore
 
 @Accessors
-class Rack extends Base<DataCenter> implements Cloneable {
+class Rack extends Base implements Cloneable {
   String name
   String height
   String comment
   String row
 
   @JsonIgnore
-  val contents = new Contents(this)
+  val contents = new Contents()
 
-  new() {  	
-  }
-  
-  new(String name, int height, String comment, String row) {
-    this.name = name
-    this.height = "" + height
-    this.comment = comment
-    this.row = row
+  static def create(String name, int height, String comment, String row) {
+  	val my = new Rack()
+    my.name = name
+    my.height = "" + height
+    my.comment = comment
+    my.row = row
+    return my
   }
 
   public override Rack clone() {
