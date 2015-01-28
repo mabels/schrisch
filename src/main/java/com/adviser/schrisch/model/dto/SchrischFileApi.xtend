@@ -101,19 +101,11 @@ class SchrischFileApi {
 
 	def static read() {
 		val yf = new ObjectMapper(new YAMLFactory())
-		val root = new File("./schrisch")
 		val dataCenters = new DataCenters()
-		root.listFiles(new FileFilter() {
-				override accept(File pathname) {
-					pathname.isDirectory
-				}
-
-		}).forall [ file |
-			val dataCenter = readDataCenter(yf, file)
-			if (dataCenter != null) {
-				dataCenters.add(dataCenter)
-			}
-		]
+		val root = new File("./schrisch")
+		if (root.exists) {
+			dataCenters += root.listFiles[it.isDirectory].map[file | readDataCenter(yf, file)].filterNull
+		}
 		return dataCenters
 	}
 

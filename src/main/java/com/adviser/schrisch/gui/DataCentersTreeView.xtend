@@ -1,15 +1,18 @@
 package com.adviser.schrisch.gui
 
-import com.adviser.schrisch.ImportRackTables
+import com.adviser.schrisch.Config
 import com.adviser.schrisch.model.Attributes
 import com.adviser.schrisch.model.Content
 import com.adviser.schrisch.model.DataCenter
+import com.adviser.schrisch.model.DataCenters
 import com.adviser.schrisch.model.Identable
 import com.adviser.schrisch.model.Ips
 import com.adviser.schrisch.model.Parentable
 import com.adviser.schrisch.model.Ports
 import com.adviser.schrisch.model.Rack
 import com.adviser.schrisch.model.Valueable
+import com.adviser.schrisch.model.dto.RackTablesApi
+import com.adviser.schrisch.model.dto.SchrischFileApi
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
@@ -20,10 +23,6 @@ import org.eclipse.swt.widgets.Composite
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
-import com.adviser.schrisch.model.DataCenters
-import com.adviser.schrisch.model.dto.SchrischFileApi
-import com.adviser.schrisch.model.dto.RackTablesApi
-import com.adviser.schrisch.Config
 
 class DataCentersTreeView implements SelectionProvider {
 
