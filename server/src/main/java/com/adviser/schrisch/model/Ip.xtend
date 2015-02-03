@@ -1,6 +1,9 @@
 package com.adviser.schrisch.model
 
 import com.adviser.xtend.annotation.Observable
+import com.fasterxml.jackson.annotation.JacksonInject
+import com.fasterxml.jackson.annotation.JsonCreator
+import java.beans.PropertyChangeListener
 
 @Observable
 class Ip extends Base {
@@ -10,13 +13,18 @@ class Ip extends Base {
 	String name
 	String address
 	
-	static def create(String version, String type, String ip, String name, String address) {
-		val my = new Ip()
-		my.version = version
-		my.type = type
-		my.ip = ip
-		my.name = name
-		my.address = address
+	@JsonCreator
+  new(@JacksonInject("pcls") PropertyChangeListener[] pcls) {
+    pcls.forEach[pcl|this.addPropertyChangeListener(pcl)]
+  }
+  
+	static def create(PropertyChangeListener[] pcls, String version, String type, String ip, String name, String address) {
+		val my = new Ip(pcls)
+		my.setVersion(version)
+		my.setType(type)
+		my.setIp(ip)
+		my.setName(name)
+		my.setAddress(address)
 		return my
 	}
 }

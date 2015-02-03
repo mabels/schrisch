@@ -39,6 +39,9 @@
   };
 
 
+  var createPlaneBox(x,y,z, x_dim, y_dim, z_dim) {
+  }
+
   var rackFactory = function(name, pos_x, pos_z, scene) {
     var foot = BABYLON.Mesh.CreateBox(name+'-foot', 1, scene);
     foot.scaling.x = 600;

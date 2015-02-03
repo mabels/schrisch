@@ -1,5 +1,7 @@
 package com.adviser.schrisch.gui
 
+import java.beans.PropertyChangeListener
+import java.beans.PropertyChangeSupport
 import org.eclipse.xtend.lib.annotations.Accessors
 
 interface ApplicationContext {
@@ -19,6 +21,10 @@ interface ApplicationContext {
   def void setDoApiLoad(Runnable action)
 
   def Runnable getDoApiLoad()
+
+  def PropertyChangeListener[] getPropertyChangeListeners()
+
+  def void addPropertyChangeListener(PropertyChangeListener pcl)
 }
 
 class ApplicationContextImpl implements ApplicationContext {
@@ -37,4 +43,16 @@ class ApplicationContextImpl implements ApplicationContext {
 
   @Accessors
   Runnable doApiLoad
+
+  @Accessors
+  val PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this)
+
+  override getPropertyChangeListeners() {
+    propertyChangeSupport.getPropertyChangeListeners()
+  }
+
+  override addPropertyChangeListener(PropertyChangeListener pcl) {
+    propertyChangeSupport.addPropertyChangeListener(pcl)
+  }
+
 }

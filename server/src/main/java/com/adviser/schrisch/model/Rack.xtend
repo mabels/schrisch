@@ -1,8 +1,11 @@
 package com.adviser.schrisch.model
 
 import com.adviser.schrisch.Utils
-import com.fasterxml.jackson.annotation.JsonIgnore
 import com.adviser.xtend.annotation.Observable
+import com.fasterxml.jackson.annotation.JacksonInject
+import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
+import java.beans.PropertyChangeListener
 
 @Observable
 class Rack extends Base implements Cloneable {
@@ -12,14 +15,20 @@ class Rack extends Base implements Cloneable {
   String row
 
   @JsonIgnore
-  val contents = new Contents()
+  val Contents contents
 
-  static def create(String name, int height, String comment, String row) {
-  	val my = new Rack()
-    my.name = name
-    my.height = "" + height
-    my.comment = comment
-    my.row = row
+  @JsonCreator
+  new(@JacksonInject("pcls") PropertyChangeListener[] pcls) {
+    pcls.forEach[pcl|this.addPropertyChangeListener(pcl)]
+    contents = new Contents(pcls)
+  }
+
+  static def create(PropertyChangeListener[] pcls, String name, int height, String comment, String row) {
+    val my = new Rack(pcls)
+    my.setName(name)
+    my.setHeight("" + height)
+    my.setComment(comment)
+    my.setRow(row)
     return my
   }
 

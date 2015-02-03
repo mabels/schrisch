@@ -15,6 +15,7 @@ import java.net.URI
 import javax.mail.URLName
 import org.eclipse.jetty.client.HttpClient
 import org.eclipse.jetty.client.util.BasicAuthentication
+import java.beans.PropertyChangeListener
 
 class RackTablesApi {
 
@@ -45,8 +46,8 @@ class RackTablesApi {
 		objectMapper.readValue(response.content, JsonNode);
 	}
 
-	def load_content_from_racktables(JsonNode in_content) {
-		val content = Content.create(
+	def load_content_from_racktables(PropertyChangeListener[] pcls, JsonNode in_content) {
+		val content = Content.create(pcls,
 			in_content.findValue('name').asText,
 			in_content.findValue('label').asText,
 			in_content.findValue('asset_no').asText,
@@ -57,47 +58,47 @@ class RackTablesApi {
 		)
 		in_content.findValue('ports').forEach[port|
 			content.ports.add(
-				Port.create(port.findValue('name').asText, port.findValue('label').asText,
+				Port.create(pcls, port.findValue('name').asText, port.findValue('label').asText,
 					port.findValue('type').asText, port.findValue('remote_port').asText,
 					port.findValue('l2address').asText, port.findValue('cable').asText))]
 
 		in_content.findValue('spaces').forEach[space|
-			content.spaces.add(Space.create(space.findValue('unit_no').asText, space.findValue('atom').asText))]
+			content.spaces.add(Space.create(pcls, space.findValue('unit_no').asText, space.findValue('atom').asText))]
 
 		in_content.findValue('ips').forEach[ip|
 			content.ips.add(
-				Ip.create(ip.findValue('version').asText, ip.findValue('type').asText,
+				Ip.create(pcls, ip.findValue('version').asText, ip.findValue('type').asText,
 					ip.findValue('ip').findValue('address').asText + "/" + ip.findValue('ip').findValue('prefix'),
 					ip.findValue('name').asText, ip.findValue('address').asText))]
 
 		in_content.findValue('attributes').fieldNames.forEach[fieldName|
 			content.attributes.add(
-				Attribute.create(
+				Attribute.create(pcls,
 					fieldName,
 					in_content.findValue('attributes').findValue(fieldName).asText
 				))]
 		return content
 	}
 
-	def load_from_rack_racktables(JsonNode in_rack) {
-		val rack = Rack.create(in_rack.findValue('name').asText, in_rack.findValue('height').asInt,
+	def load_from_rack_racktables(PropertyChangeListener[] pcls, JsonNode in_rack) {
+		val rack = Rack.create(pcls, in_rack.findValue('name').asText, in_rack.findValue('height').asInt,
 			in_rack.findValue('comment').asText, in_rack.findValue('row').asText)
 
 		request(in_rack.findValue('content').findValue('__ref__').asText).forEach [ in_content |
-			rack.contents.add(load_content_from_racktables(in_content))
+			rack.contents.add(load_content_from_racktables(pcls, in_content))
 		]
 		return rack
 	}
 
-	def static loadFromRackTables(Config config) {
-		(new RackTablesApi(config)).load_datacenters(config)
+	def static loadFromRackTables(Config config, PropertyChangeListener[] pcls) {
+		(new RackTablesApi(config)).load_datacenters(config, pcls)
 	}
 
-	def load_datacenters(Config config) {
-		val dataCenters = new DataCenters()
-		val dataCenter = dataCenters.add(new DataCenter())
+	def load_datacenters(Config config, PropertyChangeListener[] pcls) {
+		val dataCenters = new DataCenters(pcls)
+		val dataCenter = dataCenters.add(new DataCenter(pcls))
 		request("/rack").forEach [ in_rack |
-			dataCenter.racks.add(load_from_rack_racktables(in_rack))
+			dataCenter.racks.add(load_from_rack_racktables(pcls, in_rack))
 		]
 		return dataCenters
 	}

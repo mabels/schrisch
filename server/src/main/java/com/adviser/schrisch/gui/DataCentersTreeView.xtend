@@ -13,6 +13,8 @@ import com.adviser.schrisch.model.Rack
 import com.adviser.schrisch.model.Valueable
 import com.adviser.schrisch.model.dto.RackTablesApi
 import com.adviser.schrisch.model.dto.SchrischFileApi
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
@@ -20,14 +22,11 @@ import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.viewers.Viewer
 import org.eclipse.jface.viewers.ViewerSorter
 import org.eclipse.swt.widgets.Composite
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
-import com.adviser.schrisch.model.dto.Observer
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 class DataCentersTreeView implements SelectionProvider {
 
@@ -39,19 +38,19 @@ class DataCentersTreeView implements SelectionProvider {
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
+    this.applicationContext.addPropertyChangeListener(new PropertyChangeListener() {
+
+          override propertyChange(PropertyChangeEvent evt) {
+            LOGGER.debug("DataCentersTreeView=" + evt.propertyName+":"+evt.source.class.name+":"+evt.newValue?.toString);
+          }
+
+        })
+ 
 
     this.applicationContext.selectionManager.provider = this
     this.applicationContext.doLoad = [
       LOGGER.info("doLoad")
-      val dcs = SchrischFileApi.read
-      Observer.add(dcs,
-        new PropertyChangeListener() {
-
-          override propertyChange(PropertyChangeEvent evt) {
-            System.out.println("DataCentersTreeView=" + evt.propertyName);
-          }
-
-        })
+      val dcs = SchrischFileApi.read(applicationContext.propertyChangeListeners)
       viewer.input = dcs
       val selection = viewer.selection
       viewer.setSelection(selection, true)
@@ -60,7 +59,7 @@ class DataCentersTreeView implements SelectionProvider {
       SchrischFileApi.write(viewer.input as DataCenters)
     ]
     this.applicationContext.doApiLoad = [
-      viewer.input = RackTablesApi.loadFromRackTables(Config.load)
+      viewer.input = RackTablesApi.loadFromRackTables(Config.load, applicationContext.propertyChangeListeners)
       val selection = viewer.selection
       viewer.setSelection(selection, true)
     ]

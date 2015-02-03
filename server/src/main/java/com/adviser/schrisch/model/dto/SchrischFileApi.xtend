@@ -1,16 +1,21 @@
 package com.adviser.schrisch.model.dto
 
+import com.adviser.schrisch.model.Content
+import com.adviser.schrisch.model.DataCenter
 import com.adviser.schrisch.model.DataCenters
+import com.adviser.schrisch.model.Rack
+import com.fasterxml.jackson.databind.InjectableValues
 import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
+import java.beans.PropertyChangeListener
 import java.io.File
+import java.io.FileFilter
 import java.io.FileOutputStream
 import java.util.LinkedList
 import org.slf4j.LoggerFactory
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory
-import java.io.FileFilter
-import com.adviser.schrisch.model.DataCenter
-import com.adviser.schrisch.model.Rack
-import com.adviser.schrisch.model.Content
+
+import static com.adviser.schrisch.model.dto.SchrischFileApi.*
+import com.fasterxml.jackson.core.type.TypeReference
 
 class SchrischFileApi {
   static val LOGGER = LoggerFactory.getLogger(SchrischFileApi)
@@ -70,7 +75,7 @@ class SchrischFileApi {
     return rack
   }
 
-  def static readDataCenter(ObjectMapper yf, File dataCenterDir, DataCenters parent) {
+  def static readDataCenter(ObjectMapper yf, InjectableValues inject, File dataCenterDir, DataCenters parent) {
     val files = dataCenterDir.listFiles(
       new FileFilter() {
         override accept(File pathname) {
@@ -82,8 +87,7 @@ class SchrischFileApi {
       LOGGER.error("can't read directory structure missing or to much .datacenter:" + dataCenterDir.absolutePath);
       return null
     }
-
-    val dataCenter = yf.readValue(files.get(0), DataCenter)
+    val dataCenter = yf.reader(DataCenter).with(inject).readValue(files.get(0), DataCenter)
     dataCenter.parent = parent
     dataCenterDir.listFiles(
       new FileFilter() {
@@ -101,9 +105,12 @@ class SchrischFileApi {
     dataCenter
   }
 
-  def static read() {
+  def static read(PropertyChangeListener[] pcls) {
     val yf = new ObjectMapper(new YAMLFactory())
-    val dataCenters = new DataCenters()
+    val inject = new InjectableValues.Std().addValue("pcls", pcls)
+//    yf.reader(Rack).with(inject)
+//    yf.reader(DataCenter).with(inject)
+    val dataCenters = new DataCenters(pcls)
     val root = new File("./schrisch")
     if(root.exists) {
       root.listFiles(
@@ -113,7 +120,7 @@ class SchrischFileApi {
           }
         }).forEach [ file |
         LOGGER.debug("DC=>" + file)
-        dataCenters.add(readDataCenter(yf, file, dataCenters))
+        dataCenters.add(readDataCenter(yf, inject, file, dataCenters))
       ]
     }
     return dataCenters

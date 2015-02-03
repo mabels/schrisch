@@ -1,8 +1,9 @@
 package com.adviser.schrisch
 
+import com.adviser.schrisch.model.DataCenters
 import com.adviser.schrisch.model.dto.RackTablesApi
 import com.adviser.schrisch.model.dto.SchrischFileApi
-import com.adviser.schrisch.model.DataCenters
+import java.beans.PropertyChangeSupport
 
 class ImportRackTables {
 
@@ -12,12 +13,12 @@ class ImportRackTables {
   }
 
   def static loadDataCenters() {
-  	return SchrischFileApi.read()
+  	return SchrischFileApi.read((new PropertyChangeSupport(new Object())).propertyChangeListeners)
   }
   
   def static apiLoadDataCenters() {
     val config = Config.load
-    return RackTablesApi.loadFromRackTables(config)
+    return RackTablesApi.loadFromRackTables(config, (new PropertyChangeSupport(config)).propertyChangeListeners)
   }
   
   def static saveDataCenters(DataCenters dataCenters) {
