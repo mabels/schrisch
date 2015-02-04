@@ -13,8 +13,6 @@ import com.adviser.schrisch.model.Rack
 import com.adviser.schrisch.model.Valueable
 import com.adviser.schrisch.model.dto.RackTablesApi
 import com.adviser.schrisch.model.dto.SchrischFileApi
-import java.beans.PropertyChangeEvent
-import java.beans.PropertyChangeListener
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
