@@ -4,4 +4,5 @@ config.yaml
 .classpath
 /target/
 /bin/
+**/xtend-gen/
 dependency-reduced-pom.xml

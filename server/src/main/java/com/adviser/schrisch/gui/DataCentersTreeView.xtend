@@ -38,14 +38,6 @@ class DataCentersTreeView implements SelectionProvider {
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
-    this.applicationContext.addPropertyChangeListener(new PropertyChangeListener() {
-
-          override propertyChange(PropertyChangeEvent evt) {
-            LOGGER.debug("DataCentersTreeView=" + evt.propertyName+":"+evt.source.class.name+":"+evt.newValue?.toString);
-          }
-
-        })
- 
 
     this.applicationContext.selectionManager.provider = this
     this.applicationContext.doLoad = [

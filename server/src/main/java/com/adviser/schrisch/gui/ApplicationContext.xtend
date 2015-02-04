@@ -3,6 +3,7 @@ package com.adviser.schrisch.gui
 import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import org.eclipse.xtend.lib.annotations.Accessors
+import com.adviser.schrisch.model.dto.Searcher
 
 interface ApplicationContext {
 
@@ -54,5 +55,7 @@ class ApplicationContextImpl implements ApplicationContext {
   override addPropertyChangeListener(PropertyChangeListener pcl) {
     propertyChangeSupport.addPropertyChangeListener(pcl)
   }
+  
+  val searcher = new Searcher(this)
 
 }

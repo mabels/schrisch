@@ -15,7 +15,6 @@ import java.util.LinkedList
 import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.model.dto.SchrischFileApi.*
-import com.fasterxml.jackson.core.type.TypeReference
 
 class SchrischFileApi {
   static val LOGGER = LoggerFactory.getLogger(SchrischFileApi)
@@ -46,7 +45,7 @@ class SchrischFileApi {
     ]
   }
 
-  def static readRack(ObjectMapper yf, File rackDir) {
+  def static readRack(ObjectMapper yf, InjectableValues inject, File rackDir) {
     val rackFiles = rackDir.listFiles(
       new FileFilter() {
         override accept(File pathname) {
@@ -62,15 +61,14 @@ class SchrischFileApi {
       LOGGER.error("can't read directory structure missing or to much .rack:" + rackDir.absolutePath);
       return null
     }
-    val rack = yf.readValue(rackFiles.get(0), Rack)
+    val Rack rack = yf.reader(Rack).with(inject).readValue(rackFiles.get(0))
     rackDir.listFiles(
       new FileFilter() {
         override accept(File pathname) {
           pathname.file && pathname.absolutePath.endsWith(".content")
         }
-
       }).forEach [ contentFile |
-      rack.contents.add(yf.readValue(contentFile, Content))
+      rack.contents.add(yf.reader(Content).with(inject).readValue(contentFile))
     ]
     return rack
   }
@@ -87,7 +85,7 @@ class SchrischFileApi {
       LOGGER.error("can't read directory structure missing or to much .datacenter:" + dataCenterDir.absolutePath);
       return null
     }
-    val dataCenter = yf.reader(DataCenter).with(inject).readValue(files.get(0), DataCenter)
+    val DataCenter dataCenter = yf.reader(DataCenter).with(inject).readValue(files.get(0))
     dataCenter.parent = parent
     dataCenterDir.listFiles(
       new FileFilter() {
@@ -97,7 +95,7 @@ class SchrischFileApi {
         }
 
       }).forEach [ rackDir |
-      val rack = readRack(yf, rackDir)
+      val rack = readRack(yf, inject, rackDir)
       if(rack != null) {
         dataCenter.racks.add(rack)
       }

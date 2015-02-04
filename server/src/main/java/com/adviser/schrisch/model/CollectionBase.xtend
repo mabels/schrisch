@@ -24,17 +24,23 @@ class CollectionBase<T extends Parentable, P> extends Base implements Valueable 
 
   def add(T type) {
     type.setParent(parent)
+    val _oldValue = collection.clone
     collection.add(type)
+     _propertyChangeSupport.firePropertyChange("add", _oldValue, collection);
     return type
   }
 
   def +=(T type) {
-    collection += type
+    add(type)
+    collection
   }
 
-  def +=(Iterable<T> list) {
-    collection += list
-  }
+//  def +=(Iterable<T> list) {
+//    add(type)
+//    collection
+// 
+//    collection += list
+//  }
 
   override values() {
     collection
@@ -44,9 +50,4 @@ class CollectionBase<T extends Parentable, P> extends Base implements Valueable 
     collection
   }
 
-//	override void addPropertyChangeListener(PropertyChangeListener pcl) {
-//	  collection.forEach[c|
-//	    c.addPropertyChangeListener(pcl)
-//	  ]
-//	}
 }
