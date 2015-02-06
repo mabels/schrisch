@@ -1,14 +1,22 @@
 package com.adviser.schrisch.gui
 
+import com.adviser.schrisch.model.Attribute
+import com.adviser.schrisch.model.Attributes
+import com.adviser.schrisch.model.CollectionBase
 import com.adviser.schrisch.model.Content
 import com.adviser.schrisch.model.DataCenter
 import com.adviser.schrisch.model.DataCenters
+import com.adviser.schrisch.model.Ip
+import com.adviser.schrisch.model.Ips
+import com.adviser.schrisch.model.Parentable
+import com.adviser.schrisch.model.Port
+import com.adviser.schrisch.model.Ports
 import com.adviser.schrisch.model.Rack
+import com.adviser.schrisch.model.Space
+import com.adviser.schrisch.model.Spaces
 import org.eclipse.jface.action.Action
 import org.eclipse.jface.resource.ImageDescriptor
 import org.eclipse.xtend.lib.annotations.Accessors
-import com.adviser.schrisch.model.Parentable
-import com.adviser.schrisch.model.CollectionBase
 
 class ToolbarAction extends Action {
 
@@ -37,6 +45,7 @@ class ToolbarAction extends Action {
 class LoadAction extends ToolbarAction {
   new(ApplicationContext applicationContext) {
     super(applicationContext, '/arrow_refresh.png')
+    toolTipText = 'Load from disk'
   }
 
   override run() {
@@ -48,6 +57,7 @@ class LoadAction extends ToolbarAction {
 class SaveAction extends ToolbarAction {
   new(ApplicationContext applicationContext) {
     super(applicationContext, '/disk.png')
+    toolTipText = 'Save to disk'
   }
 
   override run() {
@@ -59,6 +69,7 @@ class SaveAction extends ToolbarAction {
 class ApiLoadAction extends ToolbarAction {
   new(ApplicationContext applicationContext) {
     super(applicationContext, '/server.png')
+    toolTipText = 'Load from webservice'
   }
 
   override run() {
@@ -71,6 +82,7 @@ class DeleteAction extends ToolbarAction {
 
   new(ApplicationContext applicationContext) {
     super(applicationContext, '/cross.png')
+    toolTipText = 'Delete selected element'
     enabled = false
     applicationContext.selectionManager.addSelectionListener [ selection |
       enabled = selection !== null
@@ -92,6 +104,7 @@ class DeleteAction extends ToolbarAction {
 class NewDataCenterAction extends ToolbarAction {
   new(ApplicationContext applicationContext) {
     super(applicationContext, '/building_add.png')
+    toolTipText = 'Add new DataCenter'
   }
 
   override run() {
@@ -106,6 +119,7 @@ class NewDataCenterAction extends ToolbarAction {
 class NewRackAction extends ToolbarAction {
   new(ApplicationContext applicationContext) {
     super(applicationContext, '/server_add.png')
+    toolTipText = 'Add new Rack'
     enabled = false
     applicationContext.selectionManager.addSelectionListener [ selection |
       enabled = selection instanceof DataCenter
@@ -122,6 +136,7 @@ class NewRackAction extends ToolbarAction {
 class NewContentAction extends ToolbarAction {
   new(ApplicationContext applicationContext) {
     super(applicationContext, '/drive_add.png')
+    toolTipText = 'Add new Content'
     enabled = false
     applicationContext.selectionManager.addSelectionListener [ selection |
       enabled = selection instanceof Rack
@@ -131,6 +146,74 @@ class NewContentAction extends ToolbarAction {
   override run() {
     val rack = applicationContext.selectionManager.selection as Rack
     rack.contents.add(new Content(rack.propertyChangeListeners))
+  }
+
+}
+
+class NewSpaceAction extends ToolbarAction {
+  new(ApplicationContext applicationContext) {
+    super(applicationContext, '/missing.png')
+    toolTipText = 'Add new Space'
+    enabled = false
+    applicationContext.selectionManager.addSelectionListener [ selection |
+      enabled = selection instanceof Spaces
+    ]
+  }
+
+  override run() {
+    val spaces = applicationContext.selectionManager.selection as Spaces
+    spaces.add(new Space(spaces.propertyChangeListeners))
+  }
+
+}
+
+class NewIpAction extends ToolbarAction {
+  new(ApplicationContext applicationContext) {
+    super(applicationContext, '/link_add.png')
+    toolTipText = 'Add new Ip'
+    enabled = false
+    applicationContext.selectionManager.addSelectionListener [ selection |
+      enabled = selection instanceof Ips
+    ]
+  }
+
+  override run() {
+    val ips = applicationContext.selectionManager.selection as Ips
+    ips.add(new Ip(ips.propertyChangeListeners))
+  }
+
+}
+
+class NewPortAction extends ToolbarAction {
+  new(ApplicationContext applicationContext) {
+    super(applicationContext, '/disconnect.png')
+    toolTipText = 'Add new Port'
+    enabled = false
+    applicationContext.selectionManager.addSelectionListener [ selection |
+      enabled = selection instanceof Ports
+    ]
+  }
+
+  override run() {
+    val ports = applicationContext.selectionManager.selection as Ports
+    ports.add(new Port(ports.propertyChangeListeners))
+  }
+
+}
+
+class NewAttributeAction extends ToolbarAction {
+  new(ApplicationContext applicationContext) {
+    super(applicationContext, '/table_add.png')
+    toolTipText = 'Add new Attribute'
+    enabled = false
+    applicationContext.selectionManager.addSelectionListener [ selection |
+      enabled = selection instanceof Attributes
+    ]
+  }
+
+  override run() {
+    val attributes = applicationContext.selectionManager.selection as Attributes
+    attributes.add(new Attribute(attributes.propertyChangeListeners))
   }
 
 }

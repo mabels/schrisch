@@ -53,6 +53,10 @@ class Workbench {
             bar.add(new NewDataCenterAction(applicationContext))
             bar.add(new NewRackAction(applicationContext))
             bar.add(new NewContentAction(applicationContext))
+            bar.add(new NewSpaceAction(applicationContext))
+            bar.add(new NewPortAction(applicationContext))
+            bar.add(new NewIpAction(applicationContext))
+            bar.add(new NewAttributeAction(applicationContext))
           ])
         cool.createControl(it)
       ]
