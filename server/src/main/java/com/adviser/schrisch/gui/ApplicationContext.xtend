@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory
 import org.apache.lucene.search.ScoreDoc
 import java.util.List
 import org.apache.lucene.document.Document
+import com.adviser.schrisch.model.Base
 
 interface ApplicationContext {
 
@@ -32,7 +33,7 @@ interface ApplicationContext {
 
   def void addPropertyChangeListener(PropertyChangeListener pcl)
 
-  def List<Document> doSearch(String str)
+  def List<Base> doSearch(String str)
 }
 
 class ApplicationContextImpl implements ApplicationContext {
@@ -70,7 +71,7 @@ class ApplicationContextImpl implements ApplicationContext {
     LOGGER.debug("searcher=q=" + q)
     val ret = searcher.search(q)
     ret.forEach[doc|
-      doc.fields.forEach[f| LOGGER.debug("searcher=>" + f.name+":"+f.stringValue)]
+      LOGGER.debug(">>>>"+doc.class.name+":"+doc.hashCode)
     ] 
     ret   
   }
