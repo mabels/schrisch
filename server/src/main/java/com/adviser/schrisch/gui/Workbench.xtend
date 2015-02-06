@@ -1,5 +1,7 @@
 package com.adviser.schrisch.gui
 
+import com.google.common.collect.BiMap
+import com.google.common.collect.HashBiMap
 import java.util.List
 import org.eclipse.jface.action.Action
 import org.eclipse.jface.action.ToolBarManager
@@ -34,7 +36,7 @@ class Workbench {
 
   CTabFolder bottom
 
-  List<View> views = newArrayList
+  BiMap<View, CTabItem> views = HashBiMap.create()
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
@@ -71,16 +73,15 @@ class Workbench {
       addCTabFolder2Listener(
         new CTabFolder2Adapter() {
           override close(CTabFolderEvent event) {
-            val view = event.item.getData('view') as View
-            view.removeViewUpdateListener(event.item.getData('listener') as ViewUpdateListener)
-            views -= view
+            val item = event.item as CTabItem
+            val view = views.inverse.remove(item)
+            view.removeViewUpdateListener(item.getData('listener') as ViewUpdateListener)
           }
         })
     ]
   }
 
   def void addView(View view, boolean open) {
-    views += view
     val item = new CTabItem(bottom, flags(view.flags)) => [
       val ViewUpdateListener listener = [
         text = view.title
@@ -88,16 +89,21 @@ class Workbench {
       control = view.createControls(bottom)
       listener.onUpdate()
       view.addViewUpdateListener(listener)
-      setData('view', view)
       setData('listener', listener)
     ]
+    views.put(view, item)
     if (bottom.selectionIndex === -1 || open) {
       bottom.selection = bottom.items.indexOf(item)
     }
   }
 
+  def void showView(View view) {
+    val item = views.get(view)
+    bottom.selection = bottom.items.indexOf(item)
+  }
+
   def getViews() {
-    views.unmodifiableView
+    views.keySet.unmodifiableView
   }
 
   static class ToolbarAction extends Action {

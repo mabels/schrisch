@@ -8,12 +8,26 @@ import java.beans.PropertyChangeListener
 
 @Observable
 class Content extends Base {
+
+  @Editable
   String name
+
+  @Editable
   String label
+
+  @Editable
   String asset_no
+
+  @Editable
   String type
+
+  @Editable
   String tags
+
+  @Editable
   boolean has_problems
+
+  @Editable
   String id
 
   var Spaces spaces

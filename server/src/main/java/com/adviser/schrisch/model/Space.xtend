@@ -7,7 +7,11 @@ import java.beans.PropertyChangeListener
 
 @Observable
 class Space extends Base {
+
+  @Editable
   String unit_no
+
+  @Editable
   String atom
 
   @JsonCreator

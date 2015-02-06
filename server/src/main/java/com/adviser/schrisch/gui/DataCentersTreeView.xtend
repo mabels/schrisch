@@ -104,7 +104,7 @@ class DataCentersTreeView implements SelectionProvider {
       var view = applicationContext.workbench.views.findFirst[it instanceof SearchView] as SearchView
       if (view === null) {
         view = new SearchView
-        applicationContext.workbench.addView(view, false)
+        applicationContext.workbench.addView(view, true)
       }
       view.text = searchBox.text
     }

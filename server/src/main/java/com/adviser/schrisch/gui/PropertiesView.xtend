@@ -83,7 +83,7 @@ class PropertiesEditor implements SelectionListener {
               (element as Pair<String, Object>).value?.toString
             }
           }
-          editingSupport = new StringValueEditingSupport(viewer)
+          editingSupport = new ValueEditingSupport(viewer)
         ]
         contentProvider = new TableContentProvider()
       ]
@@ -110,7 +110,7 @@ class TableContentProvider implements IStructuredContentProvider {
 
 }
 
-class StringValueEditingSupport extends EditingSupport {
+class ValueEditingSupport extends EditingSupport {
 
   new(TableViewer viewer) {
     super(viewer)

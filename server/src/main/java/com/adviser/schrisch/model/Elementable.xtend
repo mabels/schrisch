@@ -1,7 +1,17 @@
 package com.adviser.schrisch.model
 
-import java.util.List
+import java.lang.annotation.ElementType
+import java.lang.annotation.Retention
+import java.lang.annotation.RetentionPolicy
+import java.lang.annotation.Target
 
 interface Elementable {
-	def List<Pair<String, Object>> getElements()
+
+  def Iterable<Pair<String, ?>> getElements()
+
+}
+
+@Target(ElementType.FIELD)
+@Retention(RetentionPolicy.RUNTIME)
+annotation Editable {
 }

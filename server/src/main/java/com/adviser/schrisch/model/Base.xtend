@@ -1,13 +1,11 @@
 package com.adviser.schrisch.model
 
-import java.lang.reflect.Field
-import java.util.LinkedList
 import com.fasterxml.jackson.annotation.JsonIgnore
+import java.lang.reflect.Field
 
 class Base implements Identable, Parentable, Elementable {
   @JsonIgnore
   var Object _parent = null
-
 
   @JsonIgnore
   override String getIdent() {
@@ -24,18 +22,22 @@ class Base implements Identable, Parentable, Elementable {
 
   @JsonIgnore
   override getElements() {
-    new LinkedList<Pair<String, Object>>() => [ list |
-      class.declaredFields.forEach [ field |
-        val orig = field.accessible
-        try {
-          field.accessible = true
-          if(!(field.get(this) instanceof Valueable)) {
-            list.add(field.name -> new Base.ReflectedMutableObject(field, this))
-          }
-        } finally {
-          field.accessible = orig
-        }
-      ]
+    class.declaredFields.filter[isAnnotationPresent(Editable)].filter [ field |
+      val orig = field.accessible
+      try {
+        field.accessible = true
+        !(field.get(this) instanceof Valueable)
+      } finally {
+        field.accessible = orig
+      }
+    ].map [ field |
+      val orig = field.accessible
+      try {
+        field.accessible = true
+        return field.name -> new Base.ReflectedMutableObject(field, this)
+      } finally {
+        field.accessible = orig
+      }
     ]
   }
 
@@ -49,7 +51,7 @@ class Base implements Identable, Parentable, Elementable {
       this.field = field
       this.o = o
     }
-    
+
     def type() {
       field.type
     }
@@ -80,5 +82,4 @@ class Base implements Identable, Parentable, Elementable {
 
   }
 
-	
 }

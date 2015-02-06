@@ -9,9 +9,17 @@ import java.beans.PropertyChangeListener
 
 @Observable
 class Rack extends Base implements Cloneable {
+
+  @Editable
   String name
+
+  @Editable
   String height
+
+  @Editable
   String comment
+
+  @Editable
   String row
 
   @JsonIgnore
