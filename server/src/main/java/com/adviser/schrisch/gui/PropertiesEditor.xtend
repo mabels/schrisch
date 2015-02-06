@@ -13,9 +13,33 @@ import org.eclipse.jface.viewers.TableViewerColumn
 import org.eclipse.jface.viewers.TextCellEditor
 import org.eclipse.jface.viewers.Viewer
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Control
+import org.eclipse.xtend.lib.annotations.Accessors
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
+
+class PropertiesView implements View {
+
+  ApplicationContext applicationContext
+
+  new(ApplicationContext applicationContext) {
+    this.applicationContext = applicationContext
+  }
+
+  override getTitle() {
+    'Properties'
+  }
+
+  override getFlags() {
+    #[NONE]
+  }
+
+  override createControls(Composite parent) {
+    new PropertiesEditor(applicationContext, parent).control
+  }
+
+}
 
 class PropertiesEditor implements SelectionListener {
 
@@ -23,10 +47,13 @@ class PropertiesEditor implements SelectionListener {
 
   TableViewer viewer
 
+  @Accessors(PUBLIC_GETTER)
+  Control control
+
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
     this.applicationContext.selectionManager.addSelectionListener(this)
-    createControls(parent)
+    control = createControls(parent)
   }
 
   private def createControls(Composite parent) {
@@ -91,7 +118,7 @@ class StringValueEditingSupport extends EditingSupport {
 
   private def getMutable(Object element) {
     val value = (element as Pair<String, Object>).value
-    return if(value instanceof ReflectedMutableObject)
+    return if (value instanceof ReflectedMutableObject)
       value
     else
       null
@@ -103,15 +130,15 @@ class StringValueEditingSupport extends EditingSupport {
 
   override protected getCellEditor(Object element) {
     val item = element.mutable
-    if(item.type === String)
+    if (item.type === String)
       new TextCellEditor(viewer.control as Composite)
-    else if(item.type === Boolean.TYPE)
+    else if (item.type === Boolean.TYPE)
       new CheckboxCellEditor(viewer.control as Composite)
   }
 
   override protected getValue(Object element) {
     val item = element.mutable
-    if(item !== null) {
+    if (item !== null) {
       item.get ?: ''
     } else {
       (element as Pair<String, Object>).value ?: ''
@@ -120,7 +147,7 @@ class StringValueEditingSupport extends EditingSupport {
 
   override protected setValue(Object element, Object value) {
     val item = element.mutable
-    if(item !== null) {
+    if (item !== null) {
       item.set(value)
       viewer.refresh(element)
     }

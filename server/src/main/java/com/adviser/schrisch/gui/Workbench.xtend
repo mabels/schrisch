@@ -13,6 +13,9 @@ import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
+import org.eclipse.swt.custom.CTabFolder
+import org.eclipse.swt.custom.CTabItem
+import org.eclipse.swt.widgets.Control
 
 class Workbench {
 
@@ -26,8 +29,7 @@ class Workbench {
   @Accessors(PUBLIC_GETTER)
   Composite center
 
-  @Accessors(PUBLIC_GETTER)
-  Composite bottom
+  CTabFolder bottom
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
@@ -47,12 +49,27 @@ class Workbench {
         left = newComposite(it, flags(NONE), new FillLayout)
         newSashForm(it, flags(VERTICAL, BORDER)) => [
           center = newComposite(it, flags(NONE), new FillLayout)
-          bottom = newComposite(it, flags(NONE), new FillLayout)
+          bottom = new CTabFolder(it, flags(TOP, FLAT)) => [
+            layout = new FillLayout()
+            minimizeVisible = false
+            maximizeVisible = false
+            touchEnabled = true
+          ]
           weights = #[6, 2]
         ]
         weights = #[1, 5]
       ]
     ]
+  }
+
+  def void addView(View view) {
+    new CTabItem(bottom, flags(view.flags)) => [
+      text = view.title
+      control = view.createControls(bottom)
+    ]
+    if (bottom.selectionIndex === -1) {
+      bottom.selection = 0
+    }
   }
 
   static class ToolbarAction extends Action {
@@ -70,5 +87,15 @@ class Workbench {
     }
 
   }
+
+}
+
+interface View {
+
+  def String getTitle()
+
+  def int[] getFlags()
+
+  def Control createControls(Composite parent)
 
 }

@@ -23,6 +23,8 @@ import org.eclipse.xtend.lib.annotations.Data
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+import static extension com.adviser.schrisch.Utils.*
+
 class Searcher implements PropertyChangeListener {
 
   static final Logger LOGGER = LoggerFactory.getLogger(Searcher)
@@ -44,16 +46,15 @@ class Searcher implements PropertyChangeListener {
   }
 
   def List<Document> search(String q_str) {
-    val reader = DirectoryReader.open(directory)
-    val searcher = new IndexSearcher(reader)
-    val analyzer = new StandardAnalyzer()
-    val queryParser = new QueryParser("name", analyzer)
-    val collector = TopScoreDocCollector.create(5, true);
-    searcher.search(queryParser.parse(q_str), collector);
-    val ret = collector.topDocs().scoreDocs.map[sd|searcher.doc(sd.doc)]
-    reader.close()
-    ret
-
+    DirectoryReader.open(directory).transform [ reader |
+      val searcher = new IndexSearcher(reader)
+      val analyzer = new StandardAnalyzer()
+      val queryParser = new QueryParser("name", analyzer)
+      val collector = TopScoreDocCollector.create(5, true);
+      searcher.search(queryParser.parse(q_str), collector);
+      val ret = collector.topDocs().scoreDocs.map[sd|searcher.doc(sd.doc)]
+      ret
+    ]
   }
 
   override propertyChange(PropertyChangeEvent evt) {
