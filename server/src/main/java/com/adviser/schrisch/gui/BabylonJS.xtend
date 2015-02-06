@@ -1,14 +1,8 @@
 package com.adviser.schrisch.gui
 
-import org.eclipse.rap.rwt.RWT
-import org.eclipse.rap.rwt.client.service.JavaScriptLoader
-import org.eclipse.rap.rwt.remote.RemoteObject
-import org.eclipse.rap.rwt.widgets.WidgetUtil
-import org.eclipse.swt.widgets.Composite
-
-import static extension com.adviser.schrisch.Utils.*
-import org.eclipse.rap.rwt.remote.OperationHandler
 import org.eclipse.rap.rwt.remote.AbstractOperationHandler
+import org.eclipse.rap.rwt.remote.OperationHandler
+import org.eclipse.swt.widgets.Composite
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
@@ -20,13 +14,13 @@ class BabylonJS extends Composite {
   static final String HANDJS = 'hand.js'
 
   //final RemoteObject remoteObject
-
   final OperationHandler operationHandler = new AbstractOperationHandler() {
   }
 
   new(Composite parent) {
     super(parent, flags(NONE))
-    /*
+
+  /*
     val resourceManager = RWT.getResourceManager();
     if(!resourceManager.isRegistered(BABYLON)) {
       class.getResourceAsStream('/babylon/babylon.1.14.js').doTry [
@@ -51,6 +45,7 @@ class BabylonJS extends Composite {
   }
 
   override dispose() {
+
     //remoteObject?.destroy()
     super.dispose()
   }

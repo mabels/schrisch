@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Display
 
 import static extension com.adviser.schrisch.Utils.*
+import org.eclipse.swt.widgets.Text
 
 class SWTExtensions {
 
@@ -41,6 +42,15 @@ class SWTExtensions {
           handler.apply(e)
         }
       });
+  }
+
+  def static addDefaultSelectionListener(Text text, (SelectionEvent)=>void handler) {
+    text.addSelectionListener(
+      new SelectionAdapter() {
+        override widgetDefaultSelected(SelectionEvent e) {
+          handler.apply(e)
+        }
+      })
   }
 
   def static newImage(String path) {

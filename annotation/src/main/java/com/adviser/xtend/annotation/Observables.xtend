@@ -1,12 +1,6 @@
-/*******************************************************************************
- * Copyright (c) 2013 itemis AG (http://www.itemis.eu) and others.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *******************************************************************************/
 package com.adviser.xtend.annotation
 
+import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import java.lang.annotation.ElementType
 import java.lang.annotation.Target
@@ -14,7 +8,6 @@ import org.eclipse.xtend.lib.macro.AbstractClassProcessor
 import org.eclipse.xtend.lib.macro.Active
 import org.eclipse.xtend.lib.macro.TransformationContext
 import org.eclipse.xtend.lib.macro.declaration.MutableClassDeclaration
-import java.beans.PropertyChangeListener
 
 /**
  * Adds a getter and setter method for all fields
@@ -41,7 +34,7 @@ class ObservableCompilationParticipant extends AbstractClassProcessor {
         primarySourceElement = f
       ]
 
-      if(!f.final) {
+      if (!f.final) {
         clazz.addMethod('set' + fieldName.toFirstUpper) [
           addParameter(fieldName, fieldType)
           body = '''
@@ -67,7 +60,6 @@ class ObservableCompilationParticipant extends AbstractClassProcessor {
       addParameter("listener", propertyChangeListener)
       body = '''this._propertyChangeSupport.addPropertyChangeListener(listener);'''
       primarySourceElement = clazz
-      System.out.println("Observer="+this.class.name)
     ]
     clazz.addMethod("removePropertyChangeListener") [
       addParameter("listener", propertyChangeListener)

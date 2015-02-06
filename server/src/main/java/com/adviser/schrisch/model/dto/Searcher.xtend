@@ -1,9 +1,11 @@
 package com.adviser.schrisch.model.dto
 
-import com.adviser.schrisch.gui.ApplicationContext
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
 import java.util.HashMap
+import java.util.List
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -20,28 +22,25 @@ import org.apache.lucene.util.Version
 import org.eclipse.xtend.lib.annotations.Data
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import java.util.List
 
 class Searcher implements PropertyChangeListener {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Searcher)
+  static final Logger LOGGER = LoggerFactory.getLogger(Searcher)
 
-  val ApplicationContext appContext
+  ExecutorService executor = Executors.newFixedThreadPool(10)
 
   val directory = new RAMDirectory()
+
   val indexWriterConfig = new IndexWriterConfig(Version.LATEST, new StandardAnalyzer())
-  
- 
+
+  val source2doc = new HashMap<Object, SourceAndDocument>()
+
+  val writer = new IndexWriter(directory, indexWriterConfig);
+
   @Data
   static class SourceAndDocument {
     Document document
     Object source
-  }
-  val source2doc = new HashMap<Object, SourceAndDocument>()
-
-  new(ApplicationContext appContext) {
-    this.appContext = appContext
-    appContext.addPropertyChangeListener(this)
   }
 
   def List<Document> search(String q_str) {
@@ -51,37 +50,35 @@ class Searcher implements PropertyChangeListener {
     val queryParser = new QueryParser("name", analyzer)
     val collector = TopScoreDocCollector.create(5, true);
     searcher.search(queryParser.parse(q_str), collector);
-    val ret = collector.topDocs().scoreDocs.map[sd| searcher.doc(sd.doc) ]
+    val ret = collector.topDocs().scoreDocs.map[sd|searcher.doc(sd.doc)]
     reader.close()
     ret
 
   }
 
-  val writer = new IndexWriter(directory, indexWriterConfig);
-  
   override propertyChange(PropertyChangeEvent evt) {
     if (evt != null && evt.source != null && evt.newValue != null) {
-      var update = true
       var sad = source2doc.get(evt.source)
-      if (sad == null) {
-        sad = new SourceAndDocument(new Document(), evt.source)
-        source2doc.put(evt.source, sad)
-        update = false
-      } 
+      val updateAndDocument = if (sad == null) {
+          sad = new SourceAndDocument(new Document(), evt.source)
+          source2doc.put(evt.source, sad)
+          false -> sad.document
+        } else {
+          true -> sad.document
+        }
       val fieldName = evt.propertyName
       if (fieldName.equals("name")) {
-        LOGGER.debug("propertyChange:"+fieldName+":"+evt.newValue.toString)
+        LOGGER.debug("propertyChange:" + fieldName + ":" + evt.newValue.toString)
       }
       sad.document.add(new StringField(fieldName, evt.newValue.toString, Field.Store.YES))
-      if (update) {      
-         writer.updateDocument(new Term(fieldName), sad.document)
-      } else {
-        writer.addDocument(sad.document)
-      }
-      writer.commit
-      //writer.close
-
-    //  LOGGER.debug("search=>"+search("c40"))
+      executor.submit [
+        if (updateAndDocument.key) {
+          writer.updateDocument(new Term(fieldName), updateAndDocument.value)
+        } else {
+          writer.addDocument(updateAndDocument.value)
+        }
+        writer.commit
+      ]
     }
   }
 

@@ -13,24 +13,32 @@ import com.adviser.schrisch.model.Rack
 import com.adviser.schrisch.model.Valueable
 import com.adviser.schrisch.model.dto.RackTablesApi
 import com.adviser.schrisch.model.dto.SchrischFileApi
+import org.apache.lucene.index.IndexNotFoundException
+import org.eclipse.jface.layout.GridDataFactory
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.viewers.Viewer
 import org.eclipse.jface.viewers.ViewerSorter
+import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Label
+import org.eclipse.swt.widgets.Text
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
+
+import static extension com.adviser.schrisch.gui.SWTExtensions.*
 
 class DataCentersTreeView implements SelectionProvider {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(Server)
+  static final Logger LOGGER = LoggerFactory.getLogger(DataCentersTreeView)
 
   ApplicationContext applicationContext
+
+  Text searchBox
 
   TreeViewer viewer
 
@@ -40,7 +48,7 @@ class DataCentersTreeView implements SelectionProvider {
     this.applicationContext.selectionManager.provider = this
     this.applicationContext.doLoad = [
       LOGGER.info("doLoad")
-      val dcs = SchrischFileApi.read(applicationContext.propertyChangeListeners)
+      val dcs = SchrischFileApi.read(#[applicationContext.searcher])
       viewer.input = dcs
       val selection = viewer.selection
       viewer.setSelection(selection, true)
@@ -49,7 +57,7 @@ class DataCentersTreeView implements SelectionProvider {
       SchrischFileApi.write(viewer.input as DataCenters)
     ]
     this.applicationContext.doApiLoad = [
-      viewer.input = RackTablesApi.loadFromRackTables(Config.load, applicationContext.propertyChangeListeners)
+      viewer.input = RackTablesApi.loadFromRackTables(Config.load, #[applicationContext.searcher])
       val selection = viewer.selection
       viewer.setSelection(selection, true)
     ]
@@ -57,14 +65,49 @@ class DataCentersTreeView implements SelectionProvider {
   }
 
   private def createControls(Composite parent) {
-    viewer = new TreeViewer(parent, flags(V_SCROLL)) => [
-      contentProvider = new TreeContentProvider()
-      labelProvider = new TreeContentLabelProvider()
-      sorter = new ViewerSorter()
-      addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
-      tree.addDisposeListener[dispose()]
+    newComposite(parent, flags(NONE), new GridLayout) => [ composite |
+      newComposite(composite, flags(NONE), new GridLayout(2, false)) => [
+        layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
+        new Label(it, flags(NONE)) => [
+          text = 'Search:'
+        ]
+        searchBox = new Text(it, flags(SEARCH, ICON_SEARCH, ICON_CANCEL)) => [
+          layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
+          addDefaultSelectionListener[ e |
+            if (e.detail === ICON_CANCEL) {
+              searchBox.text = ''
+            } else {
+              doSearch()
+            }
+          ]
+          addModifyListener[ e |
+            doSearch()
+          ]
+        ]
+      ]
+      viewer = new TreeViewer(composite, flags(V_SCROLL)) => [
+        control.layoutData = GridDataFactory.fillDefaults.grab(true, true).create()
+        contentProvider = new TreeContentProvider()
+        labelProvider = new TreeContentLabelProvider()
+        sorter = new ViewerSorter()
+        addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
+        tree.addDisposeListener[dispose()]
+      ]
     ]
     applicationContext.doLoad.run()
+  }
+
+  private def doSearch() {
+
+    // TODO: Rest search if empty
+    if (!searchBox.text.nullOrEmpty) {
+      try {
+        LOGGER.debug('Text modified => do search ' + searchBox.text)
+        applicationContext.searcher.search(searchBox.text ?: '')
+      } catch (IndexNotFoundException e) {
+        LOGGER.error('...', e)
+      }
+    }
   }
 
   private def dispose() {

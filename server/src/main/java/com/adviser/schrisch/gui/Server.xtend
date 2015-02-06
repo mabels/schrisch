@@ -29,7 +29,7 @@ class Server {
 
   new(int port, boolean stopOnCloseEnabled) {
     this.port = port
-    if(stopOnCloseEnabled) {
+    if (stopOnCloseEnabled) {
       stopOnCloseCallback = [
         val t = new Thread [
           Thread.sleep(1000)
@@ -66,7 +66,7 @@ class Server {
     override configure(Application application) {
       application.addEntryPoint('/ui',
         [
-          val context = new ApplicationContextImpl() => [
+          val context = new ApplicationContext() => [
             it.stopOnCloseCallback = stopOnCloseCallback
             selectionManager = new SelectionManager()
           ]
@@ -84,7 +84,7 @@ class Server {
 
     override protected doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
       val s = request.servletPath + (request.pathInfo ?: '')
-      if(s == '/') {
+      if (s == '/') {
         response.sendRedirect('/ui')
       } else {
         super.doGet(request, response)
