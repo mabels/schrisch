@@ -3,9 +3,9 @@ package com.adviser.schrisch.model
 import com.fasterxml.jackson.annotation.JacksonInject
 import com.fasterxml.jackson.annotation.JsonCreator
 import java.beans.PropertyChangeListener
+import java.beans.PropertyChangeSupport
 import java.util.Collection
 import java.util.HashSet
-import java.beans.PropertyChangeSupport
 
 class CollectionBase<T extends Parentable, P> extends Base implements Valueable {
 
@@ -18,29 +18,29 @@ class CollectionBase<T extends Parentable, P> extends Base implements Valueable 
     pcls.forEach[pcl|_propertyChangeSupport.addPropertyChangeListener(pcl)]
   }
 
+  def getPropertyChangeListeners() {
+    _propertyChangeSupport.propertyChangeListeners
+  }
+
   def getCollection() {
     return collection
   }
 
   def add(T type) {
-    type.setParent(parent)
+    type.setParent(this)
     val _oldValue = collection.clone
     collection.add(type)
-     _propertyChangeSupport.firePropertyChange("add", _oldValue, collection);
+    _propertyChangeSupport.firePropertyChange("add", _oldValue, collection);
     return type
   }
 
-  def +=(T type) {
-    add(type)
-    collection
+  def remove(T type) {
+    val _oldValue = collection.clone
+    if (collection.remove(type)) {
+      _propertyChangeSupport.firePropertyChange("remove", _oldValue, collection);
+    }
+    return type
   }
-
-//  def +=(Iterable<T> list) {
-//    add(type)
-//    collection
-// 
-//    collection += list
-//  }
 
   override values() {
     collection

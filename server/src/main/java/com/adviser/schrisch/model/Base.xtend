@@ -2,6 +2,7 @@ package com.adviser.schrisch.model
 
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 
 class Base implements Identable, Parentable, Elementable {
   @JsonIgnore
@@ -47,9 +48,15 @@ class Base implements Identable, Parentable, Elementable {
 
     Object o
 
+    Method getter
+
+    Method setter
+
     new(Field field, Object o) {
       this.field = field
       this.o = o
+      this.getter = field.declaringClass.getMethod('''get«field.name.toFirstUpper»''')
+      this.setter = field.declaringClass.getMethod('''set«field.name.toFirstUpper»''', field.type)
     }
 
     def type() {
@@ -57,23 +64,11 @@ class Base implements Identable, Parentable, Elementable {
     }
 
     def get() {
-      val accessible = field.accessible
-      try {
-        field.accessible = true
-        field.get(o)
-      } finally {
-        field.accessible = accessible
-      }
+      this.getter.invoke(o)
     }
 
     def set(Object value) {
-      val accessible = field.accessible
-      try {
-        field.accessible = true
-        field.set(o, value)
-      } finally {
-        field.accessible = accessible
-      }
+      this.setter.invoke(o, value)
     }
 
     override toString() {

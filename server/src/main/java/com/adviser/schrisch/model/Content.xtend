@@ -39,9 +39,13 @@ class Content extends Base {
   new(@JacksonInject("pcls") PropertyChangeListener[] pcls) {
     pcls.forEach[pcl|this.addPropertyChangeListener(pcl)]
     spaces = new Spaces(pcls)
+    spaces.parent = this
     ports = new Ports(pcls)
+    ports.parent = this
     ips = new Ips(pcls)
+    ips.parent = this
     attributes = new Attributes(pcls)
+    attributes.parent = this
   }
 
   static def create(PropertyChangeListener[] pcls, String name, String label, String asset_no, String type,
@@ -62,7 +66,7 @@ class Content extends Base {
       if (name != null && !name.trim.empty) {
         name.trim
       } else {
-        id
+        id ?: '' + hashCode
       }
     )
   }

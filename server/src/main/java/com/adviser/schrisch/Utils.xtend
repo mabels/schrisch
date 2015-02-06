@@ -1,5 +1,7 @@
 package com.adviser.schrisch
 
+import com.adviser.schrisch.model.Parentable
+
 class Utils {
 
   def static clean_fname(String fname) {
@@ -14,13 +16,27 @@ class Utils {
   }
 
   def static <C extends AutoCloseable, R> transform(C closable, (C)=>R fn) {
-    if(closable !== null) {
+    if (closable !== null) {
       try {
         return fn.apply(closable)
       } finally {
         closable.close()
       }
     }
+  }
+
+  def static getRoot(Object in) {
+    var Parentable item = null
+    if (in instanceof Parentable) {
+      item = in
+      while (item.parent !== null) {
+        val o = item.parent
+        if (o instanceof Parentable) {
+          item = o
+        }
+      }
+    }
+    return item
   }
 
 }

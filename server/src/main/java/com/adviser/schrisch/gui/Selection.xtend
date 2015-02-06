@@ -30,6 +30,10 @@ class SelectionManager {
   def removeSelectionListener(SelectionListener listener) {
     listeners -= listener
   }
+  
+  def getSelection() {
+    provider?.selection
+  }
 
   def void onSelectionChanged() {
     if(provider !== null) {

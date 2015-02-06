@@ -3,11 +3,10 @@ package com.adviser.schrisch.gui
 import com.google.common.collect.BiMap
 import com.google.common.collect.HashBiMap
 import java.util.List
-import org.eclipse.jface.action.Action
+import org.eclipse.jface.action.CoolBarManager
 import org.eclipse.jface.action.ToolBarManager
 import org.eclipse.jface.layout.GridDataFactory
 import org.eclipse.jface.layout.GridLayoutFactory
-import org.eclipse.jface.resource.ImageDescriptor
 import org.eclipse.swt.custom.CTabFolder
 import org.eclipse.swt.custom.CTabFolder2Adapter
 import org.eclipse.swt.custom.CTabFolderEvent
@@ -16,15 +15,11 @@ import org.eclipse.swt.layout.FillLayout
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Control
 import org.eclipse.xtend.lib.annotations.Accessors
-import org.slf4j.Logger
-import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
 
 class Workbench {
-
-  static final Logger LOGGER = LoggerFactory.getLogger(Workbench)
 
   ApplicationContext applicationContext
 
@@ -45,11 +40,21 @@ class Workbench {
 
   private def createControls(Composite parent) {
     newComposite(parent, flags(NONE), GridLayoutFactory.fillDefaults.create()) => [
-      new ToolBarManager() => [ bar |
-        bar.add(new ToolbarAction('/arrow_refresh.png')[applicationContext.doLoad?.run()])
-        bar.add(new ToolbarAction('/disk.png')[applicationContext.doSave?.run()])
-        bar.add(new ToolbarAction('/server.png')[applicationContext.doApiLoad?.run()])
-        bar.createControl(it)
+      new CoolBarManager() => [ cool |
+        cool.add(
+          new ToolBarManager() => [ bar |
+            bar.add(new LoadAction(applicationContext))
+            bar.add(new SaveAction(applicationContext))
+            bar.add(new ApiLoadAction(applicationContext))
+          ])
+        cool.add(
+          new ToolBarManager() => [ bar |
+            bar.add(new DeleteAction(applicationContext))
+            bar.add(new NewDataCenterAction(applicationContext))
+            bar.add(new NewRackAction(applicationContext))
+            bar.add(new NewContentAction(applicationContext))
+          ])
+        cool.createControl(it)
       ]
       newSashForm(it, flags(HORIZONTAL, BORDER)) => [
         layoutData = GridDataFactory.fillDefaults.grab(true, true).create()
@@ -104,22 +109,6 @@ class Workbench {
 
   def getViews() {
     views.keySet.unmodifiableView
-  }
-
-  static class ToolbarAction extends Action {
-
-    ()=>void callback
-
-    new(String image, ()=>void callback) {
-      super()
-      this.callback = callback
-      imageDescriptor = ImageDescriptor.createFromURL(class.getResource(image))
-    }
-
-    override run() {
-      callback.apply()
-    }
-
   }
 
 }

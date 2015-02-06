@@ -19,5 +19,7 @@ class ApplicationContext {
   Searcher searcher = new Searcher
 
   Workbench workbench
+  
+  Object modelRoot = null
 
 }

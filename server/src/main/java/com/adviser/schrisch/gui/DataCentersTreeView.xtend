@@ -30,8 +30,10 @@ import org.slf4j.LoggerFactory
 import static org.eclipse.swt.SWT.*
 
 import static extension com.adviser.schrisch.gui.SWTExtensions.*
+import java.beans.PropertyChangeListener
+import java.beans.PropertyChangeEvent
 
-class DataCentersTreeView implements SelectionProvider {
+class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
   static final Logger LOGGER = LoggerFactory.getLogger(DataCentersTreeView)
 
@@ -46,9 +48,8 @@ class DataCentersTreeView implements SelectionProvider {
 
     this.applicationContext.selectionManager.provider = this
     this.applicationContext.doLoad = [
-      LOGGER.info("doLoad")
-      val dcs = SchrischFileApi.read(#[applicationContext.searcher])
-      viewer.input = dcs
+      viewer.input = SchrischFileApi.read(#[applicationContext.searcher, this])
+      applicationContext.modelRoot = viewer.input
       val selection = viewer.selection
       viewer.setSelection(selection, true)
     ]
@@ -56,7 +57,8 @@ class DataCentersTreeView implements SelectionProvider {
       SchrischFileApi.write(viewer.input as DataCenters)
     ]
     this.applicationContext.doApiLoad = [
-      viewer.input = RackTablesApi.loadFromRackTables(Config.load, #[applicationContext.searcher])
+      viewer.input = RackTablesApi.loadFromRackTables(Config.load, #[applicationContext.searcher, this])
+      applicationContext.modelRoot = viewer.input
       val selection = viewer.selection
       viewer.setSelection(selection, true)
     ]
@@ -108,6 +110,10 @@ class DataCentersTreeView implements SelectionProvider {
       }
       view.text = searchBox.text
     }
+  }
+
+  override propertyChange(PropertyChangeEvent evt) {
+    viewer.refresh()
   }
 
   private def dispose() {

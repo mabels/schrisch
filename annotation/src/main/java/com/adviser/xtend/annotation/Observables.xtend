@@ -61,6 +61,11 @@ class ObservableCompilationParticipant extends AbstractClassProcessor {
       body = '''this._propertyChangeSupport.addPropertyChangeListener(listener);'''
       primarySourceElement = clazz
     ]
+    clazz.addMethod("getPropertyChangeListeners") [
+      returnType = propertyChangeListener.newArrayTypeReference
+      body = '''return this._propertyChangeSupport.getPropertyChangeListeners();'''
+      primarySourceElement = clazz
+    ]
     clazz.addMethod("removePropertyChangeListener") [
       addParameter("listener", propertyChangeListener)
       body = '''this._propertyChangeSupport.removePropertyChangeListener(listener);'''

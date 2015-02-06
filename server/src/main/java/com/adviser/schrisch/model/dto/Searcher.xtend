@@ -68,9 +68,9 @@ class Searcher implements PropertyChangeListener {
           true -> sad.document
         }
       val fieldName = evt.propertyName
-      if (fieldName.equals("name")) {
-        LOGGER.debug("propertyChange:" + fieldName + ":" + evt.newValue.toString)
-      }
+      //if (fieldName.equals("name")) {
+      //  LOGGER.debug("propertyChange:" + fieldName + ":" + evt.newValue.toString)
+      //}
       sad.document.add(new StringField(fieldName, evt.newValue.toString, Field.Store.YES))
       executor.submit [
         if (updateAndDocument.key) {
