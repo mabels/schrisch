@@ -14,10 +14,10 @@ class Layout extends AbstractEntryPoint {
 
   override protected createContents(Composite parent) {
     parent.layout = new FillLayout()
-    new Workbench(applicationContext, parent) => [
+    applicationContext.workbench = new Workbench(applicationContext, parent) => [
       new DataCentersTreeView(applicationContext, left)
       new BabylonJS(center)
-      addView(new PropertiesView(applicationContext))
+      addView(new PropertiesView(applicationContext), true)
     ]
     shell.display.disposeExec [
       applicationContext.stopOnCloseCallback?.run()

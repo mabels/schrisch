@@ -13,7 +13,6 @@ import com.adviser.schrisch.model.Rack
 import com.adviser.schrisch.model.Valueable
 import com.adviser.schrisch.model.dto.RackTablesApi
 import com.adviser.schrisch.model.dto.SchrischFileApi
-import org.apache.lucene.index.IndexNotFoundException
 import org.eclipse.jface.layout.GridDataFactory
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
@@ -98,15 +97,16 @@ class DataCentersTreeView implements SelectionProvider {
   }
 
   private def doSearch() {
-
-    // TODO: Rest search if empty
     if (!searchBox.text.nullOrEmpty) {
-      try {
-        LOGGER.debug('Text modified => do search ' + searchBox.text)
-        applicationContext.searcher.search(searchBox.text ?: '')
-      } catch (IndexNotFoundException e) {
-        LOGGER.error('...', e)
+      LOGGER.debug('Text modified => do search ' + searchBox.text)
+      applicationContext.searcher.search(searchBox.text ?: '')
+
+      var view = applicationContext.workbench.views.findFirst[it instanceof SearchView] as SearchView
+      if (view === null) {
+        view = new SearchView
+        applicationContext.workbench.addView(view, false)
       }
+      view.text = searchBox.text
     }
   }
 

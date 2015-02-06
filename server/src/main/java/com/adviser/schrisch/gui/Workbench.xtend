@@ -1,21 +1,24 @@
 package com.adviser.schrisch.gui
 
+import java.util.List
 import org.eclipse.jface.action.Action
 import org.eclipse.jface.action.ToolBarManager
 import org.eclipse.jface.layout.GridDataFactory
 import org.eclipse.jface.layout.GridLayoutFactory
 import org.eclipse.jface.resource.ImageDescriptor
+import org.eclipse.swt.custom.CTabFolder
+import org.eclipse.swt.custom.CTabFolder2Adapter
+import org.eclipse.swt.custom.CTabFolderEvent
+import org.eclipse.swt.custom.CTabItem
 import org.eclipse.swt.layout.FillLayout
 import org.eclipse.swt.widgets.Composite
+import org.eclipse.swt.widgets.Control
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
-import org.eclipse.swt.custom.CTabFolder
-import org.eclipse.swt.custom.CTabItem
-import org.eclipse.swt.widgets.Control
 
 class Workbench {
 
@@ -30,6 +33,8 @@ class Workbench {
   Composite center
 
   CTabFolder bottom
+
+  List<View> views = newArrayList
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
@@ -49,12 +54,7 @@ class Workbench {
         left = newComposite(it, flags(NONE), new FillLayout)
         newSashForm(it, flags(VERTICAL, BORDER)) => [
           center = newComposite(it, flags(NONE), new FillLayout)
-          bottom = new CTabFolder(it, flags(TOP, FLAT)) => [
-            layout = new FillLayout()
-            minimizeVisible = false
-            maximizeVisible = false
-            touchEnabled = true
-          ]
+          bottom = it.createBottomTabFolder()
           weights = #[6, 2]
         ]
         weights = #[1, 5]
@@ -62,14 +62,42 @@ class Workbench {
     ]
   }
 
-  def void addView(View view) {
-    new CTabItem(bottom, flags(view.flags)) => [
-      text = view.title
-      control = view.createControls(bottom)
+  private def createBottomTabFolder(Composite parent) {
+    new CTabFolder(parent, flags(TOP, FLAT)) => [
+      layout = new FillLayout()
+      minimizeVisible = false
+      maximizeVisible = false
+      touchEnabled = true
+      addCTabFolder2Listener(
+        new CTabFolder2Adapter() {
+          override close(CTabFolderEvent event) {
+            val view = event.item.getData('view') as View
+            view.removeViewUpdateListener(event.item.getData('listener') as ViewUpdateListener)
+            views -= view
+          }
+        })
     ]
-    if (bottom.selectionIndex === -1) {
-      bottom.selection = 0
+  }
+
+  def void addView(View view, boolean open) {
+    views += view
+    val item = new CTabItem(bottom, flags(view.flags)) => [
+      val ViewUpdateListener listener = [
+        text = view.title
+      ]
+      control = view.createControls(bottom)
+      listener.onUpdate()
+      view.addViewUpdateListener(listener)
+      setData('view', view)
+      setData('listener', listener)
+    ]
+    if (bottom.selectionIndex === -1 || open) {
+      bottom.selection = bottom.items.indexOf(item)
     }
+  }
+
+  def getViews() {
+    views.unmodifiableView
   }
 
   static class ToolbarAction extends Action {
@@ -97,5 +125,35 @@ interface View {
   def int[] getFlags()
 
   def Control createControls(Composite parent)
+
+  def void addViewUpdateListener(ViewUpdateListener listener)
+
+  def void removeViewUpdateListener(ViewUpdateListener listener)
+
+}
+
+abstract class AbstractView implements View {
+
+  List<ViewUpdateListener> listeners = newArrayList
+
+  override addViewUpdateListener(ViewUpdateListener listener) {
+    listeners += listener
+  }
+
+  override removeViewUpdateListener(ViewUpdateListener listener) {
+    listeners -= listener
+  }
+
+  def void update() {
+    listeners.forEach [
+      onUpdate()
+    ]
+  }
+
+}
+
+interface ViewUpdateListener {
+
+  def void onUpdate()
 
 }

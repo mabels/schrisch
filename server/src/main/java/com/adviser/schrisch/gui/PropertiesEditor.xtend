@@ -19,7 +19,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
 
-class PropertiesView implements View {
+class PropertiesView extends AbstractView {
 
   ApplicationContext applicationContext
 
