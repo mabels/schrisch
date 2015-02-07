@@ -13,6 +13,7 @@ class Base implements Identable, Parentable, Elementable {
     "" + hashCode
   }
 
+  @JsonIgnore
   override getParent() {
     return _parent
   }

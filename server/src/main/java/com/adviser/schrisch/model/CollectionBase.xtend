@@ -6,11 +6,13 @@ import java.beans.PropertyChangeListener
 import java.beans.PropertyChangeSupport
 import java.util.Collection
 import java.util.HashSet
+import com.fasterxml.jackson.annotation.JsonIgnore
 
 class CollectionBase<T extends Parentable, P> extends Base implements Valueable {
 
   val collection = new HashSet<T>()
 
+  @JsonIgnore
   val _propertyChangeSupport = new PropertyChangeSupport(this)
 
   @JsonCreator
@@ -18,6 +20,7 @@ class CollectionBase<T extends Parentable, P> extends Base implements Valueable 
     pcls.forEach[pcl|_propertyChangeSupport.addPropertyChangeListener(pcl)]
   }
 
+  @JsonIgnore
   def getPropertyChangeListeners() {
     _propertyChangeSupport.propertyChangeListeners
   }

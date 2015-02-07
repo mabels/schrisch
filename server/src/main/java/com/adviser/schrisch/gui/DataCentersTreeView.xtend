@@ -69,13 +69,13 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
     newComposite(parent, flags(NONE), new GridLayout) => [ composite |
       newComposite(composite, flags(NONE), new GridLayout(2, false)) => [
         layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
-        new Label(it, flags(NONE)) => [
-          text = 'Search:'
-        ]
+        //        new Label(it, flags(NONE)) => [
+        //          text = 'Search:'
+        //        ]
         searchBox = new Text(it, flags(SEARCH, ICON_SEARCH, ICON_CANCEL)) => [
           layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
           addDefaultSelectionListener[ e |
-            if (e.detail === ICON_CANCEL) {
+            if(e.detail === ICON_CANCEL) {
               searchBox.text = ''
             } else {
               doSearch()
@@ -99,16 +99,26 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
   }
 
   private def doSearch() {
-    if (!searchBox.text.nullOrEmpty) {
+    if(!searchBox.text.nullOrEmpty && searchBox.text.length > 2) {
       LOGGER.debug('Text modified => do search ' + searchBox.text)
-      applicationContext.searcher.search(searchBox.text ?: '')
+      try {
+        val ret = applicationContext.searcher.search(searchBox.text ?: '', 5)
 
-      var view = applicationContext.workbench.views.findFirst[it instanceof SearchView] as SearchView
-      if (view === null) {
-        view = new SearchView
-        applicationContext.workbench.addView(view, true)
+        ret.forEach [ result |
+          LOGGER.debug("Found:" + result.model.class + ":" + result.model.ident)
+          result.model.elements.forEach [ field |
+            LOGGER.debug("Found:" + field.key.toString+":"+field.value)
+          ]
+        ]
+        var view = applicationContext.workbench.views.findFirst[it instanceof SearchView] as SearchView
+        if(view === null) {
+          view = new SearchView
+          applicationContext.workbench.addView(view, true)
+        }
+        view.text = searchBox.text
+      } catch(Exception e) {
+        LOGGER.error("Search Exception:"+e.message)
       }
-      view.text = searchBox.text
     }
   }
 

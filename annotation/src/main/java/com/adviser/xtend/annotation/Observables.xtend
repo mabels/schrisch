@@ -48,10 +48,13 @@ class ObservableCompilationParticipant extends AbstractClassProcessor {
       f.markAsRead
     }
 
+    val jsonIgnore = context.findTypeGlobally("com.fasterxml.jackson.annotation.JsonIgnore").newAnnotationReference
     // generated field to hold listeners, addPropertyChangeListener() and removePropertyChangeListener() 
     val changeSupportType = PropertyChangeSupport.newTypeReference
     clazz.addField("_propertyChangeSupport") [
+      final = true
       type = changeSupportType
+      addAnnotation(jsonIgnore)
       initializer = '''new «changeSupportType»(this)'''
       primarySourceElement = clazz
     ]
@@ -63,6 +66,7 @@ class ObservableCompilationParticipant extends AbstractClassProcessor {
     ]
     clazz.addMethod("getPropertyChangeListeners") [
       returnType = propertyChangeListener.newArrayTypeReference
+      addAnnotation(jsonIgnore)
       body = '''return this._propertyChangeSupport.getPropertyChangeListeners();'''
       primarySourceElement = clazz
     ]

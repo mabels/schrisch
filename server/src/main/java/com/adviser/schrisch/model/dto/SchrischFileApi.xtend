@@ -15,6 +15,7 @@ import java.util.LinkedList
 import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.model.dto.SchrischFileApi.*
+import com.fasterxml.jackson.databind.SerializationFeature
 
 class SchrischFileApi {
   static val LOGGER = LoggerFactory.getLogger(SchrischFileApi)
@@ -33,6 +34,7 @@ class SchrischFileApi {
 
   def static write(DataCenters dcs) {
     val yf = new ObjectMapper(new YAMLFactory())
+    yf.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     dcs.valuesTyped.forEach [ dc |
       writeYaml(yf, dc, dc.ident, '''«dc.ident».datacenter''')
       dc.racks.valuesTyped.forEach [ rack |
