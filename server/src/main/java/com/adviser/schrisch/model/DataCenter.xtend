@@ -35,7 +35,7 @@ class DataCenter extends Base {
   }
 
   override getIdent() {
-    name ?: '' + hashCode
+    name ?: super.ident
   }
 
 }

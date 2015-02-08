@@ -99,7 +99,7 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
   }
 
   private def doSearch() {
-    if(!searchBox.text.nullOrEmpty && searchBox.text.length > 2) {
+    if(!searchBox.text.nullOrEmpty && searchBox.text.length > 1) {
       LOGGER.debug('Text modified => do search ' + searchBox.text)
       try {
         val ret = applicationContext.searcher.search(searchBox.text ?: '', 5)

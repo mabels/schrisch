@@ -66,7 +66,7 @@ class Content extends Base {
       if (name != null && !name.trim.empty) {
         name.trim
       } else {
-        id ?: '' + hashCode
+        id ?: '' + super.ident
       }
     )
   }

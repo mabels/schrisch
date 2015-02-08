@@ -3,14 +3,30 @@ package com.adviser.schrisch.model
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import java.util.UUID
 
 class Base implements Identable, Parentable, Elementable {
   @JsonIgnore
   var Object _parent = null
 
+  var String objectId = null
+
+  def setObjectId(String _objectId) {
+    objectId = _objectId
+  }
+
+  override getObjectId() {
+    synchronized(this) {
+      if(objectId == null) {
+        objectId = UUID.randomUUID().toString
+      }
+    }
+    objectId
+  }
+
   @JsonIgnore
   override String getIdent() {
-    "" + hashCode
+    "" + objectId
   }
 
   @JsonIgnore

@@ -1,12 +1,13 @@
 package com.adviser.schrisch.model.dto
 
+import com.adviser.schrisch.model.Base
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
+import java.util.Arrays
 import java.util.HashMap
 import java.util.HashSet
 import java.util.LinkedList
 import java.util.List
-import java.util.concurrent.ConcurrentHashMap
 import org.apache.lucene.analysis.standard.StandardAnalyzer
 import org.apache.lucene.document.Document
 import org.apache.lucene.document.Field
@@ -16,35 +17,15 @@ import org.apache.lucene.index.IndexWriter
 import org.apache.lucene.index.IndexWriterConfig
 import org.apache.lucene.index.Term
 import org.apache.lucene.queryparser.classic.MultiFieldQueryParser
+import org.apache.lucene.queryparser.classic.QueryParser
+import org.apache.lucene.search.BooleanClause
 import org.apache.lucene.search.IndexSearcher
 import org.apache.lucene.search.TopScoreDocCollector
 import org.apache.lucene.store.RAMDirectory
 import org.apache.lucene.util.Version
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import com.adviser.schrisch.model.Base
-import java.util.Arrays
-
-class DocumentCollector {
-  val fields = new ConcurrentHashMap<String, PropertyChangeEvent>()
-  val Base model
-
-  new(Base _model) {
-    model = _model
-  }
-
-  def getModel() {
-    return model
-  }
-
-  def getFields() {
-    fields
-  }
-
-  def setField(PropertyChangeEvent pce) {
-    fields.put(pce.propertyName, pce)
-  }
-}
+import com.adviser.schrisch.model.Base.ReflectedMutableObject
 
 class SearchProcessor implements Runnable {
   static final Logger LOGGER = LoggerFactory.getLogger(SearchProcessor)
@@ -65,22 +46,32 @@ class SearchProcessor implements Runnable {
   override run() {
     while(true) {
       val work = searcher.resetToProcess
-      if(!work.values.empty) {
+      if(work != null) {
         LOGGER.debug("process " + work.values.size + " documents into index")
-      }
-      work.values.forEach [ dc |
-        searcher.writer.deleteDocuments(new Term("hashCode", dc.model.hashCode.toString))
-        val doc = new Document()
-        LOGGER.debug("hashcode="+dc.model.hashCode.toString+" ident="+dc.model.ident+
-                     " class="+dc.model.class.name)
-        doc.add(new StringField("hashCode", dc.model.hashCode.toString, Field.Store.YES))
-        doc.add(new StringField("ident", dc.model.ident, Field.Store.YES))
-        dc.fields.values.forEach [ pct |
-          doc.add(new StringField(pct.propertyName, pct.newValue.toString, Field.Store.YES))
+        work.forEach [ oid, model |
+          searcher.resetObjectId(oid, model.objectId)
+          searcher.writer.deleteDocuments(new Term("objectId", model.objectId))
+          val doc = new Document()
+          doc.add(new StringField("objectId", model.objectId, Field.Store.YES))
+          doc.add(new StringField("class", model.class.name, Field.Store.YES))
+          doc.add(new StringField("ident", model.ident, Field.Store.YES))
+          model.elements.forEach [ pair |
+            val _ = pair.value as ReflectedMutableObject
+            try {
+              LOGGER.debug("==>"+pair.key+":"+model.class.simpleName+":"+_.get.class.simpleName)
+              LOGGER.debug("==>"+pair.key+":"+model.class.name+":"+_.get.class.name+":"+_.get)
+              if (_.toString != null) {
+                LOGGER.debug("==<"+pair.key+":"+model.class.name)
+                doc.add(new StringField(pair.key, _.get.toString, Field.Store.YES))
+              }
+            } catch (Exception e) {
+              LOGGER.error("WTF"+e)
+            }
+          ]
+          //        LOGGER.debug("objectId="+model.objectId+" ident="+model.ident+
+          //                     " class="+model.class.simpleName+" fields=["+doc.fields.map[t|t.name+"{"+t.stringValue+"}"].join("|")+"]")
+          searcher.writer.addDocument(doc)
         ]
-        searcher.writer.addDocument(doc)
-      ]
-      if(!work.values.empty) {
         searcher.writer.commit
       }
       Thread.sleep(1000);
@@ -110,21 +101,24 @@ class Searcher implements PropertyChangeListener {
 
   val indexWriterConfig = new IndexWriterConfig(Version.LATEST, new StandardAnalyzer())
 
-  val source2doc = new HashMap<String, DocumentCollector>()
+  val source2model = new HashMap<String, Base>()
 
   val writer = new IndexWriter(directory, indexWriterConfig);
 
   val toProcessMutex = new Object
-  var toProcess = new HashMap<String, DocumentCollector>()
+  var toProcess = new HashMap<String, Base>()
 
   val searchProcessor = SearchProcessor.start(this);
 
-  val fieldList = new HashSet<String>(Arrays.asList("hashCode", "ident"))
+  val fieldList = new HashSet<String>(Arrays.asList("objectId", "ident"))
 
   def resetToProcess() {
     synchronized(toProcessMutex) {
+      if(toProcess.empty) {
+        return null
+      }
       val ret = toProcess
-      toProcess = new HashMap<String, DocumentCollector>()
+      toProcess = new HashMap<String, Base>()
       return ret
     }
   }
@@ -137,16 +131,25 @@ class Searcher implements PropertyChangeListener {
     val reader = DirectoryReader.open(directory)
     val searcher = new IndexSearcher(reader)
     val analyzer = new StandardAnalyzer()
-    val queryParser = new MultiFieldQueryParser(fieldList, analyzer)
+
+    //val queryParser = new MultiFieldQueryParser(fieldList, analyzer)
     val collector = TopScoreDocCollector.create(resultCount, true);
-    searcher.search(queryParser.parse(q_str), collector);
+    val flags = fieldList.map[s|BooleanClause.Occur.SHOULD]
+    val parser = new MultiFieldQueryParser(fieldList, analyzer)
+    parser.defaultOperator = QueryParser.Operator.OR
+    val query = parser.parse(q_str)
+    searcher.search(query, collector);
     val ret = new LinkedList<Result>()
-    LOGGER.debug(">>>" + fieldList)
+    LOGGER.debug(">>>" + fieldList + ">>>" + query.toString)
     collector.topDocs().scoreDocs.forEach [ sd |
-      var field = searcher.doc(sd.doc).getField("hashCode")
-      val hashCode = field.stringValue
-      val dc = source2doc.get(hashCode)
-      ret.push(new Result(dc.model))
+      val doc = searcher.doc(sd.doc)
+      var field = doc.getField("objectId")
+      val objectId = field.stringValue
+      val model = source2model.get(objectId)
+      LOGGER.debug("RESULT=>" + objectId + ":" + model +":"+ doc.getField("class"))
+      if(model != null) {
+        ret.push(new Result(model))
+      }
     ]
     reader.close
     ret
@@ -154,19 +157,26 @@ class Searcher implements PropertyChangeListener {
 
   override propertyChange(PropertyChangeEvent evt) {
     if(evt != null && evt.source != null && evt.newValue != null) {
-      var DocumentCollector dc
-      synchronized(source2doc) {
-        source2doc.get(evt.source.hashCode.toString)
-        if(dc == null) {
-          dc = new DocumentCollector(evt.source as Base)
-          source2doc.put(evt.source.hashCode.toString, dc)
+      val model = evt.source as Base
+      synchronized(source2model) {
+        if(source2model.get(model.objectId) == null) {
+          //LOGGER.debug("MAP=>"+model.objectId+":"+model.ident+":"+model.class.name)
+          source2model.put(model.objectId, model)
         }
       }
       synchronized(toProcessMutex) {
-        toProcess.put(evt.source.hashCode.toString, dc)
+        toProcess.put(model.objectId, model)
       }
-      dc.setField(evt)
       fieldList.add(evt.propertyName)
+    }
+  }
+  
+  def resetObjectId(String orig, String real) {
+    if (orig != real) {
+      synchronized(source2model) {
+        val base = source2model.remove(orig)
+        source2model.put(real, base)
+      }
     }
   }
 

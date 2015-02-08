@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.model.dto.SchrischFileApi.*
 import com.fasterxml.jackson.databind.SerializationFeature
+import org.apache.commons.io.FileUtils
 
 class SchrischFileApi {
   static val LOGGER = LoggerFactory.getLogger(SchrischFileApi)
@@ -33,6 +34,10 @@ class SchrischFileApi {
   }
 
   def static write(DataCenters dcs) {
+    val schrischFile = new File("./schrisch")
+    if (schrischFile.isDirectory) {
+      FileUtils.cleanDirectory(schrischFile)
+    }
     val yf = new ObjectMapper(new YAMLFactory())
     yf.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
     dcs.valuesTyped.forEach [ dc |

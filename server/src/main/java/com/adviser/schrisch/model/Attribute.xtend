@@ -27,7 +27,7 @@ class Attribute extends Base {
   }
 
   override getIdent() {
-    label ?: '' + hashCode
+    label ?: '' + super.ident
   }
 
 }
