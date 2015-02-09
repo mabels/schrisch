@@ -58,10 +58,10 @@ class SearchProcessor implements Runnable {
           model.elements.forEach [ pair |
             val _ = pair.value as ReflectedMutableObject
             try {
-              LOGGER.debug("==>"+pair.key+":"+model.class.simpleName+":"+_.get.class.simpleName)
-              LOGGER.debug("==>"+pair.key+":"+model.class.name+":"+_.get.class.name+":"+_.get)
+              //LOGGER.debug("==>"+pair.key+":"+model.class.simpleName+":"+_.get.class.simpleName)
+              //LOGGER.debug("==>"+pair.key+":"+model.class.name+":"+_.get.class.name+":"+_.get)
               if (_.toString != null) {
-                LOGGER.debug("==<"+pair.key+":"+model.class.name)
+                //LOGGER.debug("==<"+pair.key+":"+model.class.name)
                 doc.add(new StringField(pair.key, _.get.toString, Field.Store.YES))
               }
             } catch (Exception e) {
@@ -140,13 +140,13 @@ class Searcher implements PropertyChangeListener {
     val query = parser.parse(q_str)
     searcher.search(query, collector);
     val ret = new LinkedList<Result>()
-    LOGGER.debug(">>>" + fieldList + ">>>" + query.toString)
+    //LOGGER.debug(">>>" + fieldList + ">>>" + query.toString)
     collector.topDocs().scoreDocs.forEach [ sd |
       val doc = searcher.doc(sd.doc)
       var field = doc.getField("objectId")
       val objectId = field.stringValue
       val model = source2model.get(objectId)
-      LOGGER.debug("RESULT=>" + objectId + ":" + model +":"+ doc.getField("class"))
+      //LOGGER.debug("RESULT=>" + objectId + ":" + model +":"+ doc.getField("class"))
       if(model != null) {
         ret.push(new Result(model))
       }
