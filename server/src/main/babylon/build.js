@@ -9,12 +9,14 @@ var uglifyify    = require('uglifyify');
 var tempdir   =  path.join(os.tmpdir(), 'schrisch/rwt-resources');
 var basedir   =  path.join(__dirname, '.');
 var targetdir =  path.join(__dirname, '../../../target/classes/babylon');
-var babylon   =  './babylon.1.14.js';
+var babylon   =  './babylon.2.0-beta.js';
 var targetfile = './handler.js';
 
 function copyBabylon() {
   fs.createReadStream(path.join(basedir, babylon))
     .pipe(fs.createWriteStream(path.join(targetdir, babylon)));
+  fs.createReadStream(path.join(basedir, babylon))
+    .pipe(fs.createWriteStream(path.join(tempdir, babylon)));
 }
 
 function copyToTemp() {
