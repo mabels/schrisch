@@ -1,0 +1,15 @@
+{
+  "name": "rwt-babylonjs",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dist": "NODE_ENV=production ./node/node src/main/babylon/build.js",
+    "watch": "./node/node src/main/babylon/build.js --watch"
+  },
+  "devDependencies": {
+    "6to5ify": "2.0.0",
+    "browserify": "7.0.2",
+    "uglifyify": "2.6.0",
+    "watchify": "2.2.1"
+  }
+}
