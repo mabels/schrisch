@@ -12,26 +12,32 @@ import com.adviser.schrisch.model.Ports
 import com.adviser.schrisch.model.Rack
 import com.adviser.schrisch.model.Valueable
 import com.adviser.schrisch.model.dto.RackTablesApi
+import com.adviser.schrisch.model.dto.Result
 import com.adviser.schrisch.model.dto.SchrischFileApi
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
+import java.util.List
 import org.eclipse.jface.layout.GridDataFactory
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.viewers.Viewer
+import org.eclipse.jface.viewers.ViewerFilter
 import org.eclipse.jface.viewers.ViewerSorter
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Composite
-import org.eclipse.swt.widgets.Label
 import org.eclipse.swt.widgets.Text
+import org.eclipse.xtend.lib.annotations.Accessors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import static org.eclipse.swt.SWT.*
 
 import static extension com.adviser.schrisch.gui.SWTExtensions.*
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
+import java.util.Set
+import com.adviser.schrisch.model.CollectionBase
+import org.eclipse.jface.viewers.TreePath
 
 class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
@@ -42,6 +48,10 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
   Text searchBox
 
   TreeViewer viewer
+
+  SearchResultFilter filter
+
+  TreePath[] expanded
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
@@ -69,13 +79,10 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
     newComposite(parent, flags(NONE), new GridLayout) => [ composite |
       newComposite(composite, flags(NONE), new GridLayout(2, false)) => [
         layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
-        //        new Label(it, flags(NONE)) => [
-        //          text = 'Search:'
-        //        ]
         searchBox = new Text(it, flags(SEARCH, ICON_SEARCH, ICON_CANCEL)) => [
           layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
           addDefaultSelectionListener[ e |
-            if(e.detail === ICON_CANCEL) {
+            if (e.detail === ICON_CANCEL) {
               searchBox.text = ''
             } else {
               doSearch()
@@ -91,6 +98,8 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
         contentProvider = new TreeContentProvider()
         labelProvider = new TreeContentLabelProvider()
         sorter = new ViewerSorter()
+        filter = new SearchResultFilter()
+        addFilter(filter)
         addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
         tree.addDisposeListener[dispose()]
       ]
@@ -99,31 +108,27 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
   }
 
   private def doSearch() {
-    if(!searchBox.text.nullOrEmpty && searchBox.text.length > 1) {
+    if (!searchBox.text.nullOrEmpty && searchBox.text.length > 1) {
       LOGGER.debug('Text modified => do search ' + searchBox.text)
       try {
-        val ret = applicationContext.searcher.search(searchBox.text ?: '', 5)
-
-        ret.forEach [ result |
-          LOGGER.debug("Found:" + result.model.class + ":" + result.model.ident)
-          result.model.elements.forEach [ field |
-            LOGGER.debug("Found:" + field.key.toString+":"+field.value)
-          ]
-        ]
-        var view = applicationContext.workbench.views.findFirst[it instanceof SearchView] as SearchView
-        if(view === null) {
-          view = new SearchView
-          applicationContext.workbench.addView(view, true)
-        }
-        view.text = searchBox.text
-      } catch(Exception e) {
-        LOGGER.error("Search Exception:"+e.message)
+        val results = applicationContext.searcher.search(searchBox.text ?: '', 5)
+        filter.results = results ?: #[]
+        expanded = viewer.expandedTreePaths
+        viewer.expandAll()
+      } catch (Exception e) {
+        LOGGER.error("Search Exception:" + e.message)
       }
+    } else {
+      viewer.expandedTreePaths = expanded
+      filter.results = null
     }
+    viewer.refresh()
   }
 
   override propertyChange(PropertyChangeEvent evt) {
-    viewer.refresh()
+    if (evt.source instanceof CollectionBase) {
+      viewer.refresh()
+    }
   }
 
   private def dispose() {
@@ -206,6 +211,39 @@ class TreeContentLabelProvider extends LabelProvider {
       default:
         element?.toString ?: ''
     }
+  }
+
+}
+
+class SearchResultFilter extends ViewerFilter {
+
+  @Accessors
+  List<Result> results
+
+  override select(Viewer viewer, Object parentElement, Object element) {
+    var visible = results === null
+    if (!visible) {
+      visible = results.visibleObjects.contains(element)
+    }
+    return visible
+  }
+
+  private def visibleObjects(List<Result> results) {
+    val Set<Object> set = newHashSet
+    results.forEach [
+      val model = it.model
+      set += model
+      if (model instanceof Parentable) {
+        var parent = model.parent
+        while (parent !== null) {
+          set += parent
+          parent = if (parent instanceof Parentable) {
+            parent.parent
+          }
+        }
+      }
+    ]
+    return set
   }
 
 }

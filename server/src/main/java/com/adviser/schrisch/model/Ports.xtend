@@ -11,6 +11,10 @@ class Ports extends CollectionBase<Port, Content> {
     super(pcls)
   }
 
+  override add(Port type) {
+    super.add(type)
+  }
+
   override getIdent() {
     "ports"
   }

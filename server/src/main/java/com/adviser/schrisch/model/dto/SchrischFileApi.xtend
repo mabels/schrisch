@@ -57,14 +57,14 @@ class SchrischFileApi {
       new FileFilter() {
         override accept(File pathname) {
           val ret = pathname.file && pathname.absolutePath.endsWith(".rack")
-          if(ret) {
+          if (ret) {
             LOGGER.debug("pathname => " + pathname)
           }
           ret
         }
 
       })
-    if(rackFiles.size != 1) {
+    if (rackFiles.size != 1) {
       LOGGER.error("can't read directory structure missing or to much .rack:" + rackDir.absolutePath);
       return null
     }
@@ -76,6 +76,16 @@ class SchrischFileApi {
         }
       }).forEach [ contentFile |
       rack.contents.add(yf.reader(Content).with(inject).readValue(contentFile))
+      rack.contents.collection.forEach [
+        spaces.parent = it
+        spaces.collection.forEach[space|space.parent = spaces]
+        ports.parent = it
+        ports.collection.forEach[port|port.parent = ports]
+        ips.parent = it
+        ips.collection.forEach[ip|ip.parent = ips]
+        attributes.parent = it
+        attributes.collection.forEach[attribute|attribute.parent = attributes]
+      ]
     ]
     return rack
   }
@@ -88,7 +98,7 @@ class SchrischFileApi {
         }
 
       })
-    if(files.size != 1) {
+    if (files.size != 1) {
       LOGGER.error("can't read directory structure missing or to much .datacenter:" + dataCenterDir.absolutePath);
       return null
     }
@@ -103,7 +113,7 @@ class SchrischFileApi {
 
       }).forEach [ rackDir |
       val rack = readRack(yf, inject, rackDir)
-      if(rack != null) {
+      if (rack != null) {
         dataCenter.racks.add(rack)
       }
     ]
@@ -113,11 +123,12 @@ class SchrischFileApi {
   def static read(PropertyChangeListener[] pcls) {
     val yf = new ObjectMapper(new YAMLFactory())
     val inject = new InjectableValues.Std().addValue("pcls", pcls)
-//    yf.reader(Rack).with(inject)
-//    yf.reader(DataCenter).with(inject)
+
+    //    yf.reader(Rack).with(inject)
+    //    yf.reader(DataCenter).with(inject)
     val dataCenters = new DataCenters(pcls)
     val root = new File("./schrisch")
-    if(root.exists) {
+    if (root.exists) {
       root.listFiles(
         new FileFilter() {
           override accept(File pathname) {
