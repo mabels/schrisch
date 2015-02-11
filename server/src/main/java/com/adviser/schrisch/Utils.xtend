@@ -1,6 +1,7 @@
 package com.adviser.schrisch
 
 import com.adviser.schrisch.model.Parentable
+import java.util.List
 
 class Utils {
 
@@ -37,6 +38,21 @@ class Utils {
       }
     }
     return item
+  }
+
+  def static getTreePath(Object in) {
+    val List<Object> list = newArrayList
+    list += in
+    if (in instanceof Parentable) {
+      var item = in.parent
+      while (item !== null) {
+        list += item
+        item = if (item instanceof Parentable) {
+          item = item.parent
+        }
+      }
+    }
+    return list
   }
 
 }

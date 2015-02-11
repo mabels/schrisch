@@ -2,6 +2,8 @@ package com.adviser.schrisch.gui
 
 import com.adviser.schrisch.Config
 import com.adviser.schrisch.model.Attributes
+import com.adviser.schrisch.model.Base
+import com.adviser.schrisch.model.CollectionBase
 import com.adviser.schrisch.model.Content
 import com.adviser.schrisch.model.DataCenter
 import com.adviser.schrisch.model.DataCenters
@@ -16,28 +18,26 @@ import com.adviser.schrisch.model.dto.Result
 import com.adviser.schrisch.model.dto.SchrischFileApi
 import java.beans.PropertyChangeEvent
 import java.beans.PropertyChangeListener
+import java.util.Collections
 import java.util.List
+import java.util.Set
 import org.eclipse.jface.layout.GridDataFactory
 import org.eclipse.jface.viewers.IStructuredSelection
 import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
+import org.eclipse.jface.viewers.TreePath
 import org.eclipse.jface.viewers.TreeViewer
 import org.eclipse.jface.viewers.Viewer
-import org.eclipse.jface.viewers.ViewerFilter
 import org.eclipse.jface.viewers.ViewerSorter
 import org.eclipse.swt.layout.GridLayout
 import org.eclipse.swt.widgets.Composite
 import org.eclipse.swt.widgets.Text
-import org.eclipse.xtend.lib.annotations.Accessors
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
 import static org.eclipse.swt.SWT.*
 
 import static extension com.adviser.schrisch.gui.SWTExtensions.*
-import java.util.Set
-import com.adviser.schrisch.model.CollectionBase
-import org.eclipse.jface.viewers.TreePath
 
 class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
@@ -49,19 +49,23 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
   TreeViewer viewer
 
-  SearchResultFilter filter
+  TreeContentProvider contentProvider
 
   TreePath[] expanded
+
+  boolean isLoading = false
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
 
     this.applicationContext.selectionManager.provider = this
     this.applicationContext.doLoad = [
+      isLoading = true
       viewer.input = SchrischFileApi.read(#[applicationContext.searcher, this])
       applicationContext.modelRoot = viewer.input
       val selection = viewer.selection
       viewer.setSelection(selection, true)
+      isLoading = false
     ]
     this.applicationContext.doSave = [
       SchrischFileApi.write(viewer.input as DataCenters)
@@ -95,11 +99,11 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
       ]
       viewer = new TreeViewer(composite, flags(V_SCROLL)) => [
         control.layoutData = GridDataFactory.fillDefaults.grab(true, true).create()
+        useHashlookup = true
         contentProvider = new TreeContentProvider()
+        it.contentProvider = contentProvider
         labelProvider = new TreeContentLabelProvider()
         sorter = new ViewerSorter()
-        filter = new SearchResultFilter()
-        addFilter(filter)
         addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
         tree.addDisposeListener[dispose()]
       ]
@@ -109,24 +113,33 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
   private def doSearch() {
     if (!searchBox.text.nullOrEmpty && searchBox.text.length > 1) {
-      LOGGER.debug('Text modified => do search ' + searchBox.text)
+      if (expanded === null) {
+        expanded = viewer.expandedTreePaths
+      }
       try {
         val results = applicationContext.searcher.search(searchBox.text ?: '', 5)
-        filter.results = results ?: #[]
-        expanded = viewer.expandedTreePaths
-        viewer.expandAll()
+        contentProvider.searchResults = results ?: #[]
+        results.forEach [
+          viewer.expandToLevel(model, 0)
+        ]
       } catch (Exception e) {
         LOGGER.error("Search Exception:" + e.message)
       }
     } else {
-      viewer.expandedTreePaths = expanded
-      filter.results = null
+      contentProvider.searchResults = null
+      if (expanded !== null) {
+        viewer.expandedTreePaths = expanded
+        expanded = null
+      }
     }
     viewer.refresh()
   }
 
   override propertyChange(PropertyChangeEvent evt) {
-    if (evt.source instanceof CollectionBase) {
+    if (!isLoading && evt.source instanceof CollectionBase) {
+      if (evt.propertyName == 'add') {
+        viewer.expandToLevel(evt.source, 1)
+      }
       viewer.refresh()
     }
   }
@@ -143,11 +156,20 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
 class TreeContentProvider implements ITreeContentProvider {
 
+  Set<Base> searchLeaf = Collections.emptySet()
+
+  Set<Object> visibleElements
+
+  def setSearchResults(List<Result> results) {
+    searchLeaf = results?.map[model]?.toSet() ?: Collections.emptySet()
+    visibleElements = results?.visibleObjects
+  }
+
   override inputChanged(Viewer viewer, Object oldInput, Object newInput) {
   }
 
   override getChildren(Object parentElement) {
-    switch (parentElement) {
+    val elements = switch (parentElement) {
       DataCenter:
         parentElement.racks.values
       Rack:
@@ -164,6 +186,12 @@ class TreeContentProvider implements ITreeContentProvider {
       default:
         return null
     }
+    return if (searchLeaf.contains(parentElement))
+      elements
+    else
+      elements.filter [
+        if(visibleElements !== null) visibleElements.contains(it) else true
+      ]
   }
 
   override getElements(Object inputElement) {
@@ -171,7 +199,14 @@ class TreeContentProvider implements ITreeContentProvider {
   }
 
   override getParent(Object element) {
-    (element as Parentable).parent
+    switch (element) {
+      Rack:
+        (element.parent as Parentable).parent
+      Content:
+        (element.parent as Parentable).parent
+      Parentable:
+        element.parent
+    }
   }
 
   override hasChildren(Object element) {
@@ -179,6 +214,24 @@ class TreeContentProvider implements ITreeContentProvider {
   }
 
   override dispose() {
+  }
+
+  private def visibleObjects(List<Result> results) {
+    val Set<Object> set = newHashSet
+    results.forEach [
+      val model = it.model
+      set += model
+      if (model instanceof Parentable) {
+        var parent = model.parent
+        while (parent !== null) {
+          set += parent
+          parent = if (parent instanceof Parentable) {
+            parent.parent
+          }
+        }
+      }
+    ]
+    return set
   }
 
 }
@@ -211,39 +264,6 @@ class TreeContentLabelProvider extends LabelProvider {
       default:
         element?.toString ?: ''
     }
-  }
-
-}
-
-class SearchResultFilter extends ViewerFilter {
-
-  @Accessors
-  List<Result> results
-
-  override select(Viewer viewer, Object parentElement, Object element) {
-    var visible = results === null
-    if (!visible) {
-      visible = results.visibleObjects.contains(element)
-    }
-    return visible
-  }
-
-  private def visibleObjects(List<Result> results) {
-    val Set<Object> set = newHashSet
-    results.forEach [
-      val model = it.model
-      set += model
-      if (model instanceof Parentable) {
-        var parent = model.parent
-        while (parent !== null) {
-          set += parent
-          parent = if (parent instanceof Parentable) {
-            parent.parent
-          }
-        }
-      }
-    ]
-    return set
   }
 
 }

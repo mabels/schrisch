@@ -37,6 +37,18 @@ class Base implements Identable, Parentable, Elementable {
   override void setParent(Object parent) {
     this._parent = parent
   }
+  
+  override hashCode() {
+    getObjectId().hashCode
+  }
+  
+  override equals(Object obj) {
+    if (this === obj) return true
+    if (obj === null) return false
+    if (class !== obj.class) return false
+    val that = obj as Base
+    return getObjectId() == that.getObjectId()
+  }
 
   @JsonIgnore
   override getElements() {
