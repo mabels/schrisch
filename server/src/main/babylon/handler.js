@@ -26,7 +26,6 @@ function register(mock) {
 class BabylonWidget {
 
   constructor(properties) {
-    return;
     this.onRender = this.onRender.bind(this);
     this.onWebGLRender = this.onWebGLRender.bind(this);
     this.onResize = this.onResize.bind(this);
