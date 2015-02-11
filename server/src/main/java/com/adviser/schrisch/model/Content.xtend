@@ -71,20 +71,4 @@ class Content extends Base {
     )
   }
 
-  override int hashCode() {
-    val prime = 31
-    var result = 1
-    result = prime * result + if(id == null) 0 else id.hashCode()
-    return result
-  }
-
-  override equals(Object obj) {
-    if(this === obj) return true
-    if(obj === null) return false
-    if(class !== obj.class) return false
-    val other = obj as Content
-    if(id != other.id) return false
-    return true
-  }
-
 }

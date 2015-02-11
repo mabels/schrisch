@@ -136,11 +136,22 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
   }
 
   override propertyChange(PropertyChangeEvent evt) {
-    if (!isLoading && evt.source instanceof CollectionBase) {
-      if (evt.propertyName == 'add') {
-        viewer.expandToLevel(evt.source, 1)
+    if (!isLoading) {
+      val src = evt.source
+      if (src instanceof CollectionBase) {
+        switch (evt.propertyName) {
+          case 'add': {
+            viewer.refresh()
+            viewer.expandToLevel(src, 1)
+          }
+          case 'remove':
+            viewer.refresh(src, true)
+          default:
+            viewer.update(src, null)
+        }
+      } else {
+        viewer.update(src, null)
       }
-      viewer.refresh()
     }
   }
 

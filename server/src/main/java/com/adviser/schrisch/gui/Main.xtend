@@ -29,9 +29,9 @@ class Main {
     val server = new Server(port, stopOnClose)
     try {
       server.start [
-        if(!quite) {
+        if (!quite) {
           val uri = new URI('''http://localhost:«port»''')
-          if(Desktop.isDesktopSupported) {
+          if (Desktop.isDesktopSupported) {
             Desktop.getDesktop().browse(uri)
           } else {
             Runtime.getRuntime().exec("xdg-open " + uri.toURL);
