@@ -26,18 +26,23 @@ function register(mock) {
 class BabylonWidget {
 
   constructor(properties) {
-    this.onRenderRWT = this.onRenderRWT.bind(this);
-    this.onRenderWebGL = this.onRenderWebGL.bind(this);
-    this.onResize = this.onResize.bind(this);
-    this.onSend = this.onSend.bind(this);
-
-    this.element = document.createElement('canvas');
-    this.parent = rap.getObject(properties.parent);
-    this.parent.addListener('Resize', this.onResize);
-    this.parent.append(this.element);
-    
-    this.setupRendering();
-    rap.on('render', this.onRenderRWT);
+    try {
+      this.onRenderRWT = this.onRenderRWT.bind(this);
+      this.onRenderWebGL = this.onRenderWebGL.bind(this);
+      this.onResize = this.onResize.bind(this);
+      this.onSend = this.onSend.bind(this);
+      
+      this.element = document.createElement('canvas');
+      this.parent = rap.getObject(properties.parent);
+      this.parent.addListener('Resize', this.onResize);
+      this.parent.append(this.element);
+      
+      this.setupRendering();
+      rap.on('render', this.onRenderRWT);
+    } catch (e) {
+      console.error(e);
+      throw e;
+    }
   }
   
   setupRendering() {
@@ -45,8 +50,6 @@ class BabylonWidget {
     this.element.addEventListener('mousedown', () => dragEnabled = true);
     this.element.addEventListener('mousemove', () => dragEnabled && requestAnimationFrame(this.onRenderWebGL));
     this.element.addEventListener('mouseup', () => dragEnabled = false);
-    this.element.parentNode.addEventListener('keydown', () => requestAnimationFrame(this.onRenderWebGL));
-    this.element.parentNode.addEventListener('keyup', () => requestAnimationFrame(this.onRenderWebGL));
   }
   
   onRenderRWT() {
@@ -90,6 +93,7 @@ class BabylonWidget {
     }
     if (this.engine) {
       this.engine.resize();
+      requestAnimationFrame(this.onRenderWebGL);
     }
   }
 
