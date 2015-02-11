@@ -15,7 +15,7 @@ import static extension com.adviser.schrisch.Utils.*
 
 class BabylonJS extends Composite {
 
-  static final String BABYLON = 'babylon.2.0-beta.js'
+  static final String BABYLON = 'babylon.2.0.js'
 
   static final String HANDLER = 'handler.js'
 

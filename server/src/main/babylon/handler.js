@@ -26,41 +26,57 @@ function register(mock) {
 class BabylonWidget {
 
   constructor(properties) {
-    this.onRender = this.onRender.bind(this);
-    this.onWebGLRender = this.onWebGLRender.bind(this);
+    this.onRenderRWT = this.onRenderRWT.bind(this);
+    this.onRenderWebGL = this.onRenderWebGL.bind(this);
     this.onResize = this.onResize.bind(this);
     this.onSend = this.onSend.bind(this);
+
     this.element = document.createElement('canvas');
     this.parent = rap.getObject(properties.parent);
     this.parent.addListener('Resize', this.onResize);
     this.parent.append(this.element);
-    rap.on('render', this.onRender);
+    
+    this.setupRendering();
+    rap.on('render', this.onRenderRWT);
   }
   
-  onRender() {
+  setupRendering() {
+    var dragEnabled = false;
+    this.element.addEventListener('mousedown', () => dragEnabled = true);
+    this.element.addEventListener('mousemove', () => dragEnabled && requestAnimationFrame(this.onRenderWebGL));
+    this.element.addEventListener('mouseup', () => dragEnabled = false);
+    this.element.parentNode.addEventListener('keydown', () => requestAnimationFrame(this.onRenderWebGL));
+    this.element.parentNode.addEventListener('keyup', () => requestAnimationFrame(this.onRenderWebGL));
+  }
+  
+  onRenderRWT() {
     if (this.element.parentNode) {
-      rap.off('render', this.onRender);
+      rap.off('render', this.onRenderRWT);
 
       this.onResize();
       this.engine = new BABYLON.Engine(this.element, true);
       this.engine.renderEvenInBackground = false;
       this.scene = new BABYLON.Scene(this.engine);
       this.scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-      this.camera = new BABYLON.ArcRotateCamera('camera1', 0, -1800, -6000, new BABYLON.Vector3(1000, 1500,0), this.scene);
+      this.camera = new BABYLON.FreeCamera('free-cam', new BABYLON.Vector3(0, 1500.0, -4000.0), this.scene);
+      this.camera.setTarget(new BABYLON.Vector3(0, 500.0, 0));
       this.camera.attachControl(this.element, false);
       this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0.8, 0.8, 0.8), this.scene);
       this.light.intensity = .5;
 
+      var ground = BABYLON.Mesh.CreateGround('ground1', 2000, 2000, 2, this.scene);
       Models.createRack('xxxx', 0, 0, this.scene);
-      Models.createRack('xxx2', 600, 0, this.scene);
-//      var ground = BABYLON.Mesh.CreateGround('ground1', 2000, 2000, 2, this.scene);
-      this.engine.runRenderLoop(this.onWebGLRender);
+      //Models.createRack('xxx2', 600, 0, this.scene);
+      
+      window.SCENE = this.scene;
+      requestAnimationFrame(this.onRenderWebGL);
 
       rap.on('send', this.onSend);
     }
   }
   
-  onWebGLRender() {
+  onRenderWebGL() {
+    console.log('render new frame')
     this.scene.render();
   }
 

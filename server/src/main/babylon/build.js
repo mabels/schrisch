@@ -9,7 +9,7 @@ var uglifyify    = require('uglifyify');
 var tempdir   =  path.join(os.tmpdir(), 'schrisch/rwt-resources');
 var basedir   =  path.join(__dirname, '.');
 var targetdir =  path.join(__dirname, '../../../target/classes/babylon');
-var babylon   =  './babylon.2.0-beta.js';
+var babylon   =  './babylon.2.0.js';
 var targetfile = './handler.js';
 
 function copyBabylon() {

@@ -8,7 +8,6 @@ function createRack(name, pos_x, pos_z, scene) {
   foot.position.z = foot.scaling.z/2 + pos_z;
   
   [[0,0],[0,1100-58.7],[600-58.7, 1100-58.7],[600-58.7,0]].forEach(function(i, idx) {
-    console.log(i)
     var pile = BABYLON.Mesh.CreateBox(name+'-pile-'+idx, 1, scene);
     pile.scaling.x = 58.7
     pile.scaling.z = 58.7
@@ -25,6 +24,10 @@ function createRack(name, pos_x, pos_z, scene) {
   foot.position.x = foot.scaling.x/2 + pos_x
   foot.position.y = foot.scaling.y/2+1866.9+100;
   foot.position.z = foot.scaling.z/2 + pos_z
+}
+
+function createRackTemplate() {
+  var foot = BABYLON.Mesh.CreateBox('box', 1, scene);
 }
 
 module.exports.createRack = createRack;
