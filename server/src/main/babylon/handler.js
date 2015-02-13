@@ -50,6 +50,15 @@ class BabylonWidget {
     this.element.addEventListener('mousedown', () => dragEnabled = true);
     this.element.addEventListener('mousemove', () => dragEnabled && requestAnimationFrame(this.onRenderWebGL));
     this.element.addEventListener('mouseup', () => dragEnabled = false);
+    this.element.addEventListener('wheel', (e) => {
+      var dir = BABYLON.Vector3.Zero();
+      var transformedDirection = BABYLON.Vector3.Zero();
+      dir.copyFromFloats(0, 0, e.wheelDelta / 100.0);
+      this.camera.getViewMatrix().invertToRef(this.camera._cameraTransformMatrix);
+      BABYLON.Vector3.TransformNormalToRef(dir, this.camera._cameraTransformMatrix, transformedDirection);
+      this.camera.cameraDirection.addInPlace(transformedDirection);
+      requestAnimationFrame(this.onRenderWebGL);
+    });
   }
   
   onRenderRWT() {
@@ -60,17 +69,32 @@ class BabylonWidget {
       this.engine = new BABYLON.Engine(this.element, true);
       this.engine.renderEvenInBackground = false;
       this.scene = new BABYLON.Scene(this.engine);
-      this.scene.clearColor = new BABYLON.Color3(0.8, 0.8, 0.8);
-      this.camera = new BABYLON.FreeCamera('free-cam', new BABYLON.Vector3(0, 1500.0, -4000.0), this.scene);
-      this.camera.setTarget(new BABYLON.Vector3(0, 500.0, 0));
+      this.scene.clearColor = new BABYLON.Color3(1.0, 1.0, 1.0);
+      this.camera = new BABYLON.FreeCamera('free-cam', new BABYLON.Vector3(0, 180.0, -150.0), this.scene);
+      //this.camera.setTarget(new BABYLON.Vector3(0, 150.0, 0));
       this.camera.attachControl(this.element, false);
+      
       this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0.8, 0.8, 0.8), this.scene);
       this.light.intensity = .5;
 
-      var ground = BABYLON.Mesh.CreateGround('ground1', 2000, 2000, 2, this.scene);
-      Models.createRack('xxxx', 0, 0, this.scene);
-      //Models.createRack('xxx2', 600, 0, this.scene);
+      var ground = BABYLON.Mesh.CreateGround('ground', 50000, 50000, 2, this.scene);
       
+      // TODO: Test data...
+      var rack40he = Models.createRack('xx1', 40, this.scene);
+      rack40he.position = new BABYLON.Vector3(0, 0, 0);
+      var rack47he = Models.createRack('xx2', 47, this.scene);
+      rack47he.position = new BABYLON.Vector3(61, 0, 0);
+      var rack45he = Models.createRack('xx3', 45, this.scene);
+      rack45he.position = new BABYLON.Vector3(-61, 0, 0);
+      
+      var rack40he = Models.createRack('xx4', 40, this.scene);
+      rack40he.position = new BABYLON.Vector3(0, 0, 180);
+      var rack47he = Models.createRack('xx5', 47, this.scene);
+      rack47he.position = new BABYLON.Vector3(61, 0, 180);
+      var rack45he = Models.createRack('xx6', 45, this.scene);
+      rack45he.position = new BABYLON.Vector3(-61, 0, 180);
+
+      // TODO: Remove this global
       window.SCENE = this.scene;
       requestAnimationFrame(this.onRenderWebGL);
 
