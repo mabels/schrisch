@@ -61,15 +61,34 @@ class BabylonWidget {
       
       requestAnimationFrame(this.onRenderWebGL);
     });
-    // RWT does lazy mount the element node
-    setTimeout(function() {
-      this.element.addEventListener('keydown', function(e) {
-        console.log('keydown', e);
-      }.bind(this));
-      this.element.addEventListener('keyup', function(e) {
-        console.log('keyup', e);
-      }.bind(this));
-    }.bind(this), 0);
+    
+    var inCanvas = false;
+    this.element.addEventListener('mouseenter', () => inCanvas = true);
+    this.element.addEventListener('mouseleave', () => inCanvas = false);
+    document.addEventListener('keydown', (e) => {
+      if (inCanvas) {
+        var dir = BABYLON.Vector3.Zero();
+        var transformedDirection = BABYLON.Vector3.Zero();
+        if (e.keyCode == 65 /*a*/) {
+          dir.x = -5.0;
+        }
+        if (e.keyCode == 68 /*d*/) {
+          dir.x = 5.0;
+        }
+        if (e.keyCode == 87 /*w*/) {
+          dir.z = 5.0;
+        }
+        if (e.keyCode == 83 /*s*/) {
+          dir.z = -5.0;
+        }
+        this.camera.getViewMatrix().invertToRef(this.camera._cameraTransformMatrix);
+        BABYLON.Vector3.TransformNormalToRef(dir, this.camera._cameraTransformMatrix, transformedDirection);
+        transformedDirection.y = 0;
+        this.camera.position.addInPlace(transformedDirection);
+        
+        requestAnimationFrame(this.onRenderWebGL);
+      }
+    });
   }
   
   onRenderRWT() {
