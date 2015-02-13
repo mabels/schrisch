@@ -16,7 +16,7 @@ class Layout extends AbstractEntryPoint {
     parent.layout = new FillLayout()
     applicationContext.workbench = new Workbench(applicationContext, parent) => [
       new DataCentersTreeView(applicationContext, left)
-      new BabylonJS(center)
+      new BabylonJS(applicationContext, center)
       addView(new PropertiesView(applicationContext), true)
     ]
     shell.display.disposeExec [

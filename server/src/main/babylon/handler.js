@@ -15,7 +15,7 @@ function register(mock) {
         return new BabylonWidget(properties);
       },
       destructor : 'destroy',
-      properties : []
+      properties : ['dataCenter']
     });
   } else {
     global.rap = mock.rap;
@@ -219,6 +219,10 @@ class BabylonWidget {
   }
 
   onSend() {
+  }
+
+  setDataCenter(dataCenter) {
+    console.log(dataCenter);
   }
 
   destroy() {
