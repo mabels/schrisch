@@ -83,9 +83,11 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
   }
 
   def setDataCenter(DataCenter dataCenter) {
-    checkWidget()
-    this.dataCenter = dataCenter
-    remoteObject.set('dataCenter', om.writeValueAsString(new BabylonJS.ClientDataCenter(dataCenter)))
+    if (dataCenter !== null) {
+      checkWidget()
+      this.dataCenter = dataCenter
+      remoteObject.set('dataCenter', om.writeValueAsString(new BabylonJS.ClientDataCenter(dataCenter)))
+    }
   }
 
   override dispose() {
