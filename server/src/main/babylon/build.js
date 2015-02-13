@@ -5,6 +5,7 @@ var browserify   = require('browserify');
 var watchify     = require('watchify');
 var to5ify       = require('6to5ify');
 var uglifyify    = require('uglifyify');
+var mkdirp       = require('mkdirp');
 
 var tempdir   =  path.join(os.tmpdir(), 'schrisch/rwt-resources');
 var basedir   =  path.join(__dirname, '.');
@@ -13,7 +14,12 @@ var babylon   =  './babylon.2.0.js';
 var targetfile = './handler.js';
 
 function copyBabylon() {
-  fs.mkdirSync(targetdir);
+  try {
+    fs.accessSync(targetdir);
+  } catch(err) {
+    mkdirp.sync(targetdir);
+  }
+
   fs.createReadStream(path.join(basedir, babylon))
     .pipe(fs.createWriteStream(path.join(targetdir, babylon)));
   fs.createReadStream(path.join(basedir, babylon))

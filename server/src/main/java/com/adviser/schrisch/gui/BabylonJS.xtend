@@ -79,7 +79,9 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
   override propertyChange(PropertyChangeEvent evt) {
     // Trigger redraw
-    setDataCenter(this.dataCenter)
+    if(this.dataCenter != null) {
+      setDataCenter(this.dataCenter)
+    }
   }
 
   def setDataCenter(DataCenter dataCenter) {
