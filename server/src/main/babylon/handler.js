@@ -53,12 +53,23 @@ class BabylonWidget {
     this.element.addEventListener('wheel', (e) => {
       var dir = BABYLON.Vector3.Zero();
       var transformedDirection = BABYLON.Vector3.Zero();
-      dir.copyFromFloats(0, 0, e.wheelDelta / 100.0);
+      dir.copyFromFloats(0, 0, e.wheelDelta / 10.0);
       this.camera.getViewMatrix().invertToRef(this.camera._cameraTransformMatrix);
       BABYLON.Vector3.TransformNormalToRef(dir, this.camera._cameraTransformMatrix, transformedDirection);
-      this.camera.cameraDirection.addInPlace(transformedDirection);
+      transformedDirection.y = 0;
+      this.camera.position.addInPlace(transformedDirection);
+      
       requestAnimationFrame(this.onRenderWebGL);
     });
+    // RWT does lazy mount the element node
+    setTimeout(function() {
+      this.element.addEventListener('keydown', function(e) {
+        console.log('keydown', e);
+      }.bind(this));
+      this.element.addEventListener('keyup', function(e) {
+        console.log('keyup', e);
+      }.bind(this));
+    }.bind(this), 0);
   }
   
   onRenderRWT() {
@@ -88,11 +99,11 @@ class BabylonWidget {
       rack45he.position = new BABYLON.Vector3(-61, 0, 0);
       
       var rack40he = Models.createRack('xx4', 40, this.scene);
-      rack40he.position = new BABYLON.Vector3(0, 0, 180);
+      rack40he.position = new BABYLON.Vector3(0, 0, 260);
       var rack47he = Models.createRack('xx5', 47, this.scene);
-      rack47he.position = new BABYLON.Vector3(61, 0, 180);
+      rack47he.position = new BABYLON.Vector3(61, 0, 260);
       var rack45he = Models.createRack('xx6', 45, this.scene);
-      rack45he.position = new BABYLON.Vector3(-61, 0, 180);
+      rack45he.position = new BABYLON.Vector3(-61, 0, 260);
 
       // TODO: Remove this global
       window.SCENE = this.scene;
