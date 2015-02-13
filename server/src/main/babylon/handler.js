@@ -103,12 +103,12 @@ class BabylonWidget {
       this.camera = new BABYLON.FreeCamera('free-cam', new BABYLON.Vector3(0, 180.0, -150.0), this.scene);
       //this.camera.setTarget(new BABYLON.Vector3(0, 150.0, 0));
       this.camera.attachControl(this.element, false);
-      
+
       this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0.8, 0.8, 0.8), this.scene);
       this.light.intensity = .5;
 
       var ground = BABYLON.Mesh.CreateGround('ground', 50000, 50000, 2, this.scene);
-      
+
       // TODO: Test data...
       var rack40he = Models.createRack('xx1', 40, this.scene);
       rack40he.position = new BABYLON.Vector3(0, 0, 0);
@@ -116,7 +116,7 @@ class BabylonWidget {
       rack47he.position = new BABYLON.Vector3(61, 0, 0);
       var rack45he = Models.createRack('xx3', 45, this.scene);
       rack45he.position = new BABYLON.Vector3(-61, 0, 0);
-      
+
       var rack40he = Models.createRack('xx4', 40, this.scene);
       rack40he.position = new BABYLON.Vector3(0, 0, 260);
       var rack47he = Models.createRack('xx5', 47, this.scene);
@@ -125,13 +125,80 @@ class BabylonWidget {
       rack45he.position = new BABYLON.Vector3(-61, 0, 260);
 
       // TODO: Remove this global
+
+      // generate drawing canvas
+      this.drawingCanvas = document.createElement("canvas");
+      this.drawingCanvas.id = "DebugLayerDrawingCanvas";
+      this.drawingCanvas.style.position = "absolute";
+      this.drawingCanvas.style.pointerEvents = "none";
+      this.drawingContext = this.drawingCanvas.getContext("2d");
+      this.element.parentNode.appendChild(this.drawingCanvas);
+
+      this.calculateDrawing();
+      this.scene.registerAfterRender(this.syncDrawing.bind(this));
+
       window.SCENE = this.scene;
       requestAnimationFrame(this.onRenderWebGL);
 
       rap.on('send', this.onSend);
     }
   }
-  
+
+  calculateDrawing() {
+    this.drawingCanvas.style.left = "0px";
+    this.drawingCanvas.style.top = "0px";
+    this.drawingCanvas.style.width = this.engine.getRenderWidth() + "px";
+    this.drawingCanvas.style.height = this.engine.getRenderHeight() + "px";
+
+    this.drawingCanvas.width = this.engine.getRenderWidth();
+    this.drawingCanvas.height = this.engine.getRenderHeight();
+  }
+
+  syncDrawing() {
+    this.drawingContext.clearRect(0, 0, this.drawingCanvas.width, this.drawingCanvas.height);
+    var engine = this.engine;
+    var viewport = this.scene.activeCamera.viewport;
+    var globalViewport = viewport.toGlobal(engine);
+
+    // Meshes
+    var meshes = this.scene.getActiveMeshes();
+    for (var index = 0; index < meshes.length; index++) {
+      var mesh = meshes.data[index];
+      if(mesh.name.match(/(foot|pile|top)/)) {
+        var position = mesh.getBoundingInfo().boundingSphere.center;
+        var projectedPosition = BABYLON.Vector3.Project(
+          position,
+          mesh.getWorldMatrix(),
+          this.scene.getTransformMatrix(),
+          globalViewport);
+        this.renderLabel(mesh.name, projectedPosition, 12, 'black');
+      }
+    }
+  }
+
+  renderLabel(text, projectedPosition, labelOffset, color) {
+    if (projectedPosition.z > 0 && projectedPosition.z < 1.0) {
+      this.drawingContext.font = "normal 12px Segoe UI";
+      var textMetrics = this.drawingContext.measureText(text);
+      var centerX = projectedPosition.x - textMetrics.width / 2;
+      var centerY = projectedPosition.y;
+      this.drawingContext.beginPath();
+      this.drawingContext.rect(centerX - 5, centerY - labelOffset, textMetrics.width + 10, 17);
+      this.drawingContext.fillStyle = color;
+      this.drawingContext.globalAlpha = 0.5;
+      this.drawingContext.fill();
+      this.drawingContext.globalAlpha = 1.0;
+      this.drawingContext.strokeStyle = '#FFFFFF';
+      this.drawingContext.lineWidth = 1;
+      this.drawingContext.stroke();
+      this.drawingContext.fillStyle = "#FFFFFF";
+      this.drawingContext.fillText(text, centerX, centerY);
+      this.drawingContext.beginPath();
+      this.drawingContext.arc(projectedPosition.x, centerY, 2, 0, 2 * Math.PI, false);
+      this.drawingContext.fill();
+    }
+  }
+
   onRenderWebGL() {
     console.log('render new frame')
     this.scene.render();
