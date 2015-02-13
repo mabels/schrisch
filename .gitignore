@@ -2,6 +2,7 @@ config.yaml
 *~.skp
 .project
 .classpath
+.DS_Store
 /target/
 /bin/
 **/xtend-gen/
