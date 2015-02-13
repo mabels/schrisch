@@ -47,6 +47,7 @@ function createRack(name, units, scene) {
   top.parent = node;
 
   let root = new BABYLON.Mesh(name, scene);
+  root.label = name;
   node.parent = root;
 
   return root;

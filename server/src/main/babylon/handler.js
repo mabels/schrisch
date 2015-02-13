@@ -164,14 +164,14 @@ class BabylonWidget {
     var meshes = this.scene.getActiveMeshes();
     for (var index = 0; index < meshes.length; index++) {
       var mesh = meshes.data[index];
-      if(mesh.name.match(/(foot|pile|top)/)) {
+      if (mesh.label) {
         var position = mesh.getBoundingInfo().boundingSphere.center;
         var projectedPosition = BABYLON.Vector3.Project(
           position,
           mesh.getWorldMatrix(),
           this.scene.getTransformMatrix(),
           globalViewport);
-        this.renderLabel(mesh.name, projectedPosition, 12, 'black');
+        this.renderLabel(mesh.label, projectedPosition, 12, 'black');
       }
     }
   }
@@ -214,6 +214,7 @@ class BabylonWidget {
     }
     if (this.engine) {
       this.engine.resize();
+      this.calculateDrawing();
       requestAnimationFrame(this.onRenderWebGL);
     }
   }
