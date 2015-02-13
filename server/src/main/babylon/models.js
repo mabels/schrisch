@@ -53,4 +53,6 @@ function createRack(name, units, scene) {
   return root;
 }
 
+module.exports.RACK_WIDTH = RACK_WIDTH;
+module.exports.RACK_DEPTH = RACK_DEPTH;
 module.exports.createRack = createRack;

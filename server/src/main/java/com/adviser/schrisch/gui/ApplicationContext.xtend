@@ -1,10 +1,15 @@
 package com.adviser.schrisch.gui
 
 import com.adviser.schrisch.model.dto.Searcher
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
+import java.beans.PropertyChangeSupport
 import org.eclipse.xtend.lib.annotations.Accessors
 
 @Accessors
-class ApplicationContext {
+class ApplicationContext implements PropertyChangeListener {
+
+  final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
   Runnable stopOnCloseCallback
 
@@ -19,7 +24,23 @@ class ApplicationContext {
   Searcher searcher = new Searcher
 
   Workbench workbench
-  
+
   Object modelRoot = null
+
+  new() {
+    addPropertyChangeListener(searcher)
+  }
+
+  def void addPropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.addPropertyChangeListener(listener)
+  }
+
+  def void removePropertyChangeListener(PropertyChangeListener listener) {
+    this.pcs.removePropertyChangeListener(listener)
+  }
+
+  override propertyChange(PropertyChangeEvent evt) {
+    pcs.firePropertyChange(evt)
+  }
 
 }

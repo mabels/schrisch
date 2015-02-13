@@ -18,8 +18,10 @@ import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
 
 import static extension com.adviser.schrisch.Utils.*
+import java.beans.PropertyChangeListener
+import java.beans.PropertyChangeEvent
 
-class BabylonJS extends Composite implements SelectionListener {
+class BabylonJS extends Composite implements SelectionListener, PropertyChangeListener {
 
   static final String BABYLON = 'babylon.2.0.js'
 
@@ -39,7 +41,8 @@ class BabylonJS extends Composite implements SelectionListener {
   new(ApplicationContext applicationContext, Composite parent) {
     super(parent, flags(NONE))
     this.applicationContext = applicationContext
-    applicationContext.selectionManager.addSelectionListener(this)
+    this.applicationContext.addPropertyChangeListener(this)
+    this.applicationContext.selectionManager.addSelectionListener(this)
 
     val resourceManager = RWT.getResourceManager();
     if (!resourceManager.isRegistered(HANDLER)) {
@@ -68,21 +71,25 @@ class BabylonJS extends Composite implements SelectionListener {
         val parent = o.parent
         o = if(parent instanceof Parentable) parent else null
       }
-      if (o != null) {
+      if (o != null && this.dataCenter != o) {
         setDataCenter(o as DataCenter)
       }
     }
   }
 
+  override propertyChange(PropertyChangeEvent evt) {
+    // Trigger redraw
+    setDataCenter(this.dataCenter)
+  }
+
   def setDataCenter(DataCenter dataCenter) {
-    if (this.dataCenter != dataCenter) {
-      checkWidget()
-      this.dataCenter = dataCenter
-      remoteObject.set('dataCenter', om.writeValueAsString(new BabylonJS.ClientDataCenter(dataCenter)))
-    }
+    checkWidget()
+    this.dataCenter = dataCenter
+    remoteObject.set('dataCenter', om.writeValueAsString(new BabylonJS.ClientDataCenter(dataCenter)))
   }
 
   override dispose() {
+    applicationContext.removePropertyChangeListener(this)
     applicationContext.selectionManager.removeSelectionListener(this)
     remoteObject?.destroy()
     super.dispose()
@@ -97,6 +104,8 @@ class BabylonJS extends Composite implements SelectionListener {
     }
 
     def String getObjectId() { delegate.objectId }
+
+    def String getIdent() { delegate.ident }
 
     def String getName() { delegate.name }
 
@@ -121,6 +130,8 @@ class BabylonJS extends Composite implements SelectionListener {
     }
 
     def String getObjectId() { delegate.objectId }
+
+    def String getIdent() { delegate.ident }
 
     def String getName() { delegate.name }
 

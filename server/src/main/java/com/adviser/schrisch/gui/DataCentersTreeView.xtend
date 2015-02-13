@@ -57,11 +57,12 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
   new(ApplicationContext applicationContext, Composite parent) {
     this.applicationContext = applicationContext
-
+    this.applicationContext.addPropertyChangeListener(this)
     this.applicationContext.selectionManager.provider = this
+    
     this.applicationContext.doLoad = [
       isLoading = true
-      viewer.input = SchrischFileApi.read(#[applicationContext.searcher, this])
+      viewer.input = SchrischFileApi.read(#[applicationContext])
       applicationContext.modelRoot = viewer.input
       val selection = viewer.selection
       viewer.setSelection(selection, true)
@@ -71,7 +72,7 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
       SchrischFileApi.write(viewer.input as DataCenters)
     ]
     this.applicationContext.doApiLoad = [
-      viewer.input = RackTablesApi.loadFromRackTables(Config.load, #[applicationContext.searcher, this])
+      viewer.input = RackTablesApi.loadFromRackTables(Config.load, #[applicationContext])
       applicationContext.modelRoot = viewer.input
       val selection = viewer.selection
       viewer.setSelection(selection, true)
@@ -156,6 +157,7 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
   }
 
   private def dispose() {
+    this.applicationContext.removePropertyChangeListener(this)
     this.applicationContext.selectionManager.provider = null
   }
 

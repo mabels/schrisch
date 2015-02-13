@@ -69,16 +69,16 @@ class BabylonWidget {
       if (inCanvas) {
         var dir = BABYLON.Vector3.Zero();
         var transformedDirection = BABYLON.Vector3.Zero();
-        if (e.keyCode == 65 /*a*/) {
+        if (e.keyCode == 65 /* a */) {
           dir.x = -5.0;
         }
-        if (e.keyCode == 68 /*d*/) {
+        if (e.keyCode == 68 /* d */) {
           dir.x = 5.0;
         }
-        if (e.keyCode == 87 /*w*/) {
+        if (e.keyCode == 87 /* w */) {
           dir.z = 5.0;
         }
-        if (e.keyCode == 83 /*s*/) {
+        if (e.keyCode == 83 /* s */) {
           dir.z = -5.0;
         }
         this.camera.getViewMatrix().invertToRef(this.camera._cameraTransformMatrix);
@@ -101,30 +101,12 @@ class BabylonWidget {
       this.scene = new BABYLON.Scene(this.engine);
       this.scene.clearColor = new BABYLON.Color3(1.0, 1.0, 1.0);
       this.camera = new BABYLON.FreeCamera('free-cam', new BABYLON.Vector3(0, 180.0, -150.0), this.scene);
-      //this.camera.setTarget(new BABYLON.Vector3(0, 150.0, 0));
       this.camera.attachControl(this.element, false);
 
       this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0.8, 0.8, 0.8), this.scene);
       this.light.intensity = .5;
 
       var ground = BABYLON.Mesh.CreateGround('ground', 50000, 50000, 2, this.scene);
-
-      // TODO: Test data...
-      var rack40he = Models.createRack('xx1', 40, this.scene);
-      rack40he.position = new BABYLON.Vector3(0, 0, 0);
-      var rack47he = Models.createRack('xx2', 47, this.scene);
-      rack47he.position = new BABYLON.Vector3(61, 0, 0);
-      var rack45he = Models.createRack('xx3', 45, this.scene);
-      rack45he.position = new BABYLON.Vector3(-61, 0, 0);
-
-      var rack40he = Models.createRack('xx4', 40, this.scene);
-      rack40he.position = new BABYLON.Vector3(0, 0, 260);
-      var rack47he = Models.createRack('xx5', 47, this.scene);
-      rack47he.position = new BABYLON.Vector3(61, 0, 260);
-      var rack45he = Models.createRack('xx6', 45, this.scene);
-      rack45he.position = new BABYLON.Vector3(-61, 0, 260);
-
-      // TODO: Remove this global
 
       // generate drawing canvas
       this.drawingCanvas = document.createElement("canvas");
@@ -137,6 +119,7 @@ class BabylonWidget {
       this.calculateDrawing();
       this.scene.registerAfterRender(this.syncDrawing.bind(this));
 
+      // TODO: Remove this global
       window.SCENE = this.scene;
       requestAnimationFrame(this.onRenderWebGL);
 
@@ -223,7 +206,20 @@ class BabylonWidget {
   }
 
   setDataCenter(dataCenter) {
-    console.log(dataCenter);
+    // Cleanup mess...
+    if (this.dataCenter) {
+      this.dataCenter.racks.forEach((rack, i) => {
+        rack.object.dispose();
+      });
+    }
+    this.dataCenter = JSON.parse(dataCenter);
+    // ... and build up new
+    this.dataCenter.racks.forEach((rack, i) => {
+      var glRack = Models.createRack(rack.ident, rack.height, this.scene);
+      glRack.position = new BABYLON.Vector3((Models.RACK_WIDTH + 5) * i, 0, 400);
+      rack.object = glRack;
+    });
+    requestAnimationFrame(this.onRenderWebGL);
   }
 
   destroy() {
