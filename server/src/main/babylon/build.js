@@ -13,9 +13,23 @@ var babylon   =  './babylon.2.0.js';
 var targetfile = './handler.js';
 
 function copyBabylon() {
-  fs.mkdirSync(targetdir);
+  if (!fs.existsSync(path.join(__dirname, '../../../target'))) {
+    fs.mkdirSync(path.join(__dirname, '../../../target'));
+  }
+  if (!fs.existsSync(path.join(__dirname, '../../../target/classes'))) {
+    fs.mkdirSync(path.join(__dirname, '../../../target/classes'));
+  }
+  if (!fs.existsSync(targetdir)) {
+    fs.mkdirSync(targetdir);
+  }
   fs.createReadStream(path.join(basedir, babylon))
     .pipe(fs.createWriteStream(path.join(targetdir, babylon)));
+  if (!fs.existsSync(path.join(os.tmpdir(), 'schrisch'))) {
+    fs.mkdirSync(path.join(os.tmpdir(), 'schrisch'));
+  }
+  if (!fs.existsSync(tempdir)) {
+    fs.mkdirSync(tempdir);
+  }
   fs.createReadStream(path.join(basedir, babylon))
     .pipe(fs.createWriteStream(path.join(tempdir, babylon)));
 }
