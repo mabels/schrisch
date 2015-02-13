@@ -13,6 +13,7 @@ var babylon   =  './babylon.2.0.js';
 var targetfile = './handler.js';
 
 function copyBabylon() {
+  fs.mkdirSync(targetdir);
   fs.createReadStream(path.join(basedir, babylon))
     .pipe(fs.createWriteStream(path.join(targetdir, babylon)));
   fs.createReadStream(path.join(basedir, babylon))
