@@ -160,7 +160,7 @@ class BabylonWidget {
       rack.object = glRack;
       rack.contents.forEach((content) => {
         if (content.spaces.collection.length > 0) {
-          let glDevice = Models.createDevice(content.ident, content.spaces.collection[0].unit_no, 1, this.scene);
+          let glDevice = Models.createDevice(content.label, content.spaces.collection[0].unit_no, 1, this.scene);
           glDevice.parent = glRack;
           glDevice.position = new BABYLON.Vector3(0, content.spaces.collection[0].unit_no * Models.RACK_UNIT, 0);
           content.object = glDevice;
