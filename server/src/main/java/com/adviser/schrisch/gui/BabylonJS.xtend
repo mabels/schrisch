@@ -75,10 +75,14 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
       var o = selection
       while (o !== null) {
         if (o instanceof DataCenter) {
-          setDataCenter(o)
+          if (this.dataCenter != o)  {
+            setDataCenter(o)
+          }
         }
         if (o instanceof Rack) {
-          setSelectedRack(o)
+          if (this.selectedRack != 0) {
+            setSelectedRack(o)
+          }
         }
         val parent = o.parent
         o = if(parent instanceof Parentable) parent else null
@@ -87,7 +91,6 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
   }
 
   override propertyChange(PropertyChangeEvent evt) {
-
     // Trigger redraw
     setDataCenter(this.dataCenter)
   }

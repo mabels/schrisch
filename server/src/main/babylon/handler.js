@@ -150,6 +150,9 @@ class BabylonWidget {
     if (this.dataCenter) {
       this.dataCenter.racks.forEach((rack, i) => {
         rack.object.dispose();
+        rack.contents.forEach((content) => {
+          content.object.dispose();
+        });
       });
     }
     this.dataCenter = JSON.parse(dataCenter);
@@ -177,6 +180,7 @@ class BabylonWidget {
     this.camera.position.z = rack.object.position.z - 400;
     this.camera.rotation = rack.object.rotation.negate();
     this.camera._reset();
+    requestAnimationFrame(this.onRenderWebGL);
   }
   
   setEnabled(enabled) {
