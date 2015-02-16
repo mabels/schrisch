@@ -48,7 +48,7 @@ function createRack(name, units, scene) {
 
   let tex = new BABYLON.DynamicTexture(name + '-text-texture', 512, scene, true);
   tex.hasAlpha = true;
-  tex.drawText(name, null, RACK_WIDTH * 4, '32px sans-serif', 'white', 'transparent', true);
+  tex.drawText(name, null, RACK_WIDTH * 4, '32px sans-serif', 'black', 'transparent', true);
   var plane =  BABYLON.Mesh.CreatePlane(name + "-TextPlane", RACK_WIDTH * 2, scene, true);
   plane.material = new BABYLON.StandardMaterial(name + "TextPlaneMaterial", scene);
   plane.material.backFaceCulling = false;
@@ -65,6 +65,25 @@ function createRack(name, units, scene) {
   return root;
 }
 
+function createDevice(name, unit, units, scene) {
+  let mat = new BABYLON.StandardMaterial(name + '-material', scene);
+  let col = (unit / 47.0 / 2.0) + 0.5;
+  mat.diffuseColor = new BABYLON.Color3(col, col / 2.0, col / 2.0);
+
+  let box = BABYLON.Mesh.CreateBox(name + '-foot', 1, scene);
+  box.material = mat;
+  box.scaling = new BABYLON.Vector3(RACK_WIDTH - 2.0, (RACK_UNIT * units) - 1.0, RACK_DEPTH - 2.0);
+  box.position = new BABYLON.Vector3(RACK_WIDTH / 2.0, 0.5, RACK_DEPTH / 2.0);
+  
+  let root = new BABYLON.Mesh(name, scene);
+  root.label = name;
+  box.parent = root;
+
+  return root;
+}
+
+module.exports.RACK_UNIT = RACK_UNIT;
 module.exports.RACK_WIDTH = RACK_WIDTH;
 module.exports.RACK_DEPTH = RACK_DEPTH;
 module.exports.createRack = createRack;
+module.exports.createDevice = createDevice;

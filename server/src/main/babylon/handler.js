@@ -104,10 +104,14 @@ class BabylonWidget {
       this.camera = new BABYLON.FreeCamera('free-cam', new BABYLON.Vector3(0, 180.0, -150.0), this.scene);
       this.camera.attachControl(this.element, false);
 
-      this.light = new BABYLON.HemisphericLight('light1', new BABYLON.Vector3(0.8, 0.8, 0.8), this.scene);
-      this.light.intensity = .5;
+      this.light0 = new BABYLON.HemisphericLight('light0', new BABYLON.Vector3(0.8, 0.8, 0.8), this.scene);
+      this.light0.intensity = .5;
+      this.light1 = new BABYLON.DirectionalLight('light1', new BABYLON.Vector3(-1, -1, 1), this.scene);
+      this.light1.diffuse = new BABYLON.Color3(0.8, 0.8, 0.8);
 
       var ground = BABYLON.Mesh.CreateGround('ground', 50000, 50000, 2, this.scene);
+      ground.mat = new BABYLON.StandardMaterial('ground-material', this.scene);
+      ground.mat.diffuseColor = new BABYLON.Color3(0.2, 0.2, 0.2);
 
       // TODO: Remove this global
       window.SCENE = this.scene;
@@ -149,9 +153,17 @@ class BabylonWidget {
     this.dataCenter = JSON.parse(dataCenter);
     // ... and build up new
     this.dataCenter.racks.forEach((rack, i) => {
-      var glRack = Models.createRack(rack.ident, rack.height, this.scene);
+      let glRack = Models.createRack(rack.ident, rack.height, this.scene);
       glRack.position = new BABYLON.Vector3((Models.RACK_WIDTH + 20) * i, 0, 400);
       rack.object = glRack;
+      rack.contents.forEach((content) => {
+        if (content.spaces.collection.length > 0) {
+          let glDevice = Models.createDevice(content.ident, content.spaces.collection[0].unit_no, 1, this.scene);
+          glDevice.parent = glRack;
+          glDevice.position = new BABYLON.Vector3(0, content.spaces.collection[0].unit_no * Models.RACK_UNIT, 0);
+          content.object = glDevice;
+        }
+      });
     });
     this.camera.position = new BABYLON.Vector3(0, 180.0, -150.0);
     requestAnimationFrame(this.onRenderWebGL);
