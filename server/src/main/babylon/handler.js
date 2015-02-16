@@ -16,7 +16,7 @@ function register(mock) {
         return new BabylonWidget(properties);
       },
       destructor : 'destroy',
-      properties : ['dataCenter', 'selectedRack']
+      properties : ['dataCenter', 'selectedRack', 'enabled']
     });
   } else {
     global.rap = mock.rap;
@@ -28,6 +28,7 @@ class BabylonWidget {
 
   constructor(properties) {
     try {
+      this.enabled = true;
       this.onRenderRWT = this.onRenderRWT.bind(this);
       this.onRenderWebGL = this.onRenderWebGL.bind(this);
       this.onResize = this.onResize.bind(this);
@@ -122,8 +123,9 @@ class BabylonWidget {
   }
 
   onRenderWebGL() {
-    console.log('render new frame')
-    this.scene.render();
+    if (this.enabled) {
+      this.scene.render();
+    }
   }
 
   onResize() {
@@ -175,6 +177,10 @@ class BabylonWidget {
     this.camera.position.z = rack.object.position.z - 400;
     this.camera.rotation = rack.object.rotation.negate();
     this.camera._reset();
+  }
+  
+  setEnabled(enabled) {
+    this.enabled = enabled;
   }
 
   destroy() {

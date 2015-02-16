@@ -32,8 +32,10 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
   final ObjectMapper om = new ObjectMapper()
 
   DataCenter dataCenter
-  
+
   Rack selectedRack
+
+  boolean enabled = true
 
   final RemoteObject remoteObject
 
@@ -45,6 +47,10 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
     this.applicationContext = applicationContext
     this.applicationContext.addPropertyChangeListener(this)
     this.applicationContext.selectionManager.addSelectionListener(this)
+    this.applicationContext.doTriggerRender = [
+      enabled = !enabled
+      remoteObject.set('enabled', enabled)
+    ]
 
     val resourceManager = RWT.getResourceManager();
     if (!resourceManager.isRegistered(HANDLER)) {
@@ -81,6 +87,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
   }
 
   override propertyChange(PropertyChangeEvent evt) {
+
     // Trigger redraw
     setDataCenter(this.dataCenter)
   }
@@ -92,7 +99,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
       remoteObject.set('dataCenter', om.writeValueAsString(new BabylonJS.ClientDataCenter(dataCenter)))
     }
   }
-  
+
   def setSelectedRack(Rack rack) {
     if (rack !== null) {
       checkWidget()

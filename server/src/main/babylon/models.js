@@ -1,4 +1,4 @@
-const RACK_UNIT = 4.826; // cm
+const RACK_UNIT = 4.445; // cm
 const RACK_WIDTH = 60.0; // cm
 const RACK_DEPTH = 110.0; // cm
 const RACK_BORDER = 2.0; // cm

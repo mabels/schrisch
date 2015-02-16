@@ -17,6 +17,7 @@ import com.adviser.schrisch.model.Spaces
 import org.eclipse.jface.action.Action
 import org.eclipse.jface.resource.ImageDescriptor
 import org.eclipse.xtend.lib.annotations.Accessors
+import org.eclipse.jface.action.IAction
 
 class ToolbarAction extends Action {
 
@@ -27,6 +28,12 @@ class ToolbarAction extends Action {
 
   new(ApplicationContext applicationContext, String image) {
     super()
+    this.applicationContext = applicationContext
+    imageDescriptor = ImageDescriptor.createFromURL(class.getResource(image))
+  }
+
+  new(ApplicationContext applicationContext, String image, int style) {
+    super(null, style)
     this.applicationContext = applicationContext
     imageDescriptor = ImageDescriptor.createFromURL(class.getResource(image))
   }
@@ -214,6 +221,19 @@ class NewAttributeAction extends ToolbarAction {
   override run() {
     val attributes = applicationContext.selectionManager.selection as Attributes
     attributes.add(new Attribute(attributes.propertyChangeListeners))
+  }
+
+}
+
+class ToggleRenderAction extends ToolbarAction {
+
+  new(ApplicationContext applicationContext) {
+    super(applicationContext, '/world.png', IAction.AS_CHECK_BOX)
+    checked = true
+  }
+
+  override run() {
+    applicationContext.doTriggerRender.run
   }
 
 }

@@ -20,6 +20,8 @@ class ApplicationContext implements PropertyChangeListener {
   Runnable doSave
 
   Runnable doApiLoad
+  
+  Runnable doTriggerRender
 
   Searcher searcher = new Searcher
 

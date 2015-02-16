@@ -62,13 +62,7 @@ class Content extends Base {
   }
 
   override getIdent() {
-    Utils.clean_fname(
-      if (name != null && !name.trim.empty) {
-        name.trim
-      } else {
-        id ?: '' + super.ident
-      }
-    )
+    Utils.clean_fname(label?.trim ?: name?.trim ?: id ?: super.ident)
   }
 
 }

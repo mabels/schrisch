@@ -58,6 +58,10 @@ class Workbench {
             bar.add(new NewIpAction(applicationContext))
             bar.add(new NewAttributeAction(applicationContext))
           ])
+        cool.add(
+          new ToolBarManager() => [ bar |
+            bar.add(new ToggleRenderAction(applicationContext))
+          ])
         cool.createControl(it)
       ]
       newSashForm(it, flags(HORIZONTAL, BORDER)) => [
