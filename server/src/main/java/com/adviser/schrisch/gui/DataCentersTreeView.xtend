@@ -22,8 +22,8 @@ import java.util.Collections
 import java.util.List
 import java.util.Set
 import org.eclipse.jface.layout.GridDataFactory
+import org.eclipse.jface.viewers.ILazyTreeContentProvider
 import org.eclipse.jface.viewers.IStructuredSelection
-import org.eclipse.jface.viewers.ITreeContentProvider
 import org.eclipse.jface.viewers.LabelProvider
 import org.eclipse.jface.viewers.TreePath
 import org.eclipse.jface.viewers.TreeViewer
@@ -59,7 +59,7 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
     this.applicationContext = applicationContext
     this.applicationContext.addPropertyChangeListener(this)
     this.applicationContext.selectionManager.provider = this
-    
+
     this.applicationContext.doLoad = [
       try {
         isLoading = true
@@ -94,29 +94,26 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
   private def createControls(Composite parent) {
     newComposite(parent, flags(NONE), new GridLayout) => [ composite |
-      newComposite(composite, flags(NONE), new GridLayout(2, false)) => [
+      searchBox = new Text(composite, flags(SEARCH, ICON_SEARCH, ICON_CANCEL)) => [
         layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
-        searchBox = new Text(it, flags(SEARCH, ICON_SEARCH, ICON_CANCEL)) => [
-          layoutData = GridDataFactory.fillDefaults.grab(true, false).create()
-          addDefaultSelectionListener[ e |
-            if (e.detail === ICON_CANCEL) {
-              searchBox.text = ''
-            } else {
-              doSearch()
-            }
-          ]
-          addModifyListener[ e |
+        addDefaultSelectionListener[ e |
+          if (e.detail === ICON_CANCEL) {
+            searchBox.text = ''
+          } else {
             doSearch()
-          ]
+          }
+        ]
+        addModifyListener[ e |
+          doSearch()
         ]
       ]
-      viewer = new TreeViewer(composite, flags(V_SCROLL)) => [
+      viewer = new TreeViewer(composite, flags(VIRTUAL, V_SCROLL)) => [
         control.layoutData = GridDataFactory.fillDefaults.grab(true, true).create()
         useHashlookup = true
-        contentProvider = new TreeContentProvider()
+        contentProvider = new TreeContentProvider(it)
         it.contentProvider = contentProvider
-        labelProvider = new TreeContentLabelProvider()
-        sorter = new ViewerSorter()
+        labelProvider = new TreeLabelProvider()
+        //sorter = new ViewerSorter()
         addSelectionChangedListener[e|applicationContext.selectionManager.onSelectionChanged]
         tree.addDisposeListener[dispose()]
       ]
@@ -130,8 +127,10 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
         expanded = viewer.expandedTreePaths
       }
       try {
-        val results = applicationContext.searcher.search(searchBox.text ?: '', 50)
+        val results = applicationContext.searcher.search(searchBox.text ?: '', 2000)
         contentProvider.searchResults = results ?: #[]
+        // XXX: Hack to trigger tree reevaluation
+        viewer.input = viewer.input
         results.forEach [
           viewer.expandToLevel(model, 0)
         ]
@@ -158,7 +157,7 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
             viewer.expandToLevel(src, 1)
           }
           case 'remove':
-            viewer.refresh(src, true)
+            viewer.refresh()
           default:
             viewer.update(src, null)
         }
@@ -179,11 +178,17 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
 
 }
 
-class TreeContentProvider implements ITreeContentProvider {
+class TreeContentProvider implements ILazyTreeContentProvider {
+
+  TreeViewer viewer
 
   Set<Base> searchLeaf = Collections.emptySet()
 
   Set<Object> visibleElements
+
+  new(TreeViewer viewer) {
+    this.viewer = viewer
+  }
 
   def setSearchResults(List<Result> results) {
     searchLeaf = results?.map[model]?.toSet() ?: Collections.emptySet()
@@ -193,7 +198,20 @@ class TreeContentProvider implements ITreeContentProvider {
   override inputChanged(Viewer viewer, Object oldInput, Object newInput) {
   }
 
-  override getChildren(Object parentElement) {
+  override updateElement(Object parent, int index) {
+    val children = parent.children
+    if (children.length > index) {
+      val object = parent.children.get(index)
+      viewer.replace(parent, index, object)
+      viewer.setChildCount(object, object.children?.length)
+    }
+  }
+
+  override updateChildCount(Object element, int currentChildCount) {
+    viewer.setChildCount(element, element.children.length)
+  }
+
+  def Object[] getChildren(Object parentElement) {
     val elements = switch (parentElement) {
       DataCenter:
         parentElement.racks.values
@@ -211,15 +229,16 @@ class TreeContentProvider implements ITreeContentProvider {
       default:
         return null
     }
-    return if (searchLeaf.contains(parentElement))
-      elements
-    else
-      elements.filter [
+    if (searchLeaf.contains(parentElement)) {
+      return elements
+    } else {
+      return elements.filter [
         if(visibleElements !== null) visibleElements.contains(it) else true
       ]
+    }
   }
 
-  override getElements(Object inputElement) {
+  def Object[] getElements(Object inputElement) {
     inputElement.children
   }
 
@@ -234,7 +253,7 @@ class TreeContentProvider implements ITreeContentProvider {
     }
   }
 
-  override hasChildren(Object element) {
+  def boolean hasChildren(Object element) {
     element?.children?.size > 0
   }
 
@@ -261,7 +280,7 @@ class TreeContentProvider implements ITreeContentProvider {
 
 }
 
-class TreeContentLabelProvider extends LabelProvider {
+class TreeLabelProvider extends LabelProvider {
 
   override getImage(Object element) {
     switch (element) {
