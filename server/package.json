@@ -8,6 +8,7 @@
   },
   "devDependencies": {
     "6to5ify": "2.0.0",
+    "array.prototype.find": "1.0.0",
     "browserify": "7.0.2",
     "uglifyify": "2.6.0",
     "watchify": "2.2.1"

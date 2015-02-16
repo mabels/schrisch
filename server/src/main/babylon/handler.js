@@ -4,6 +4,7 @@
  * Code based on:
  * https://github.com/eclipsesource/rap-ckeditor/blob/master/com.eclipsesource.widgets.ckeditor/src/resources/handler.js
  */
+require('array.prototype.find');
 var Models = require('./models.js');
 
 var inRapRuntime = typeof(global.rap) !== 'undefined';
@@ -15,7 +16,7 @@ function register(mock) {
         return new BabylonWidget(properties);
       },
       destructor : 'destroy',
-      properties : ['dataCenter']
+      properties : ['dataCenter', 'selectedRack']
     });
   } else {
     global.rap = mock.rap;
@@ -131,7 +132,6 @@ class BabylonWidget {
     }
     if (this.engine) {
       this.engine.resize();
-      this.calculateDrawing();
       requestAnimationFrame(this.onRenderWebGL);
     }
   }
@@ -153,7 +153,16 @@ class BabylonWidget {
       glRack.position = new BABYLON.Vector3((Models.RACK_WIDTH + 20) * i, 0, 400);
       rack.object = glRack;
     });
+    this.camera.position = new BABYLON.Vector3(0, 180.0, -150.0);
     requestAnimationFrame(this.onRenderWebGL);
+  }
+  
+  setSelectedRack(rackOid) {
+    let rack = this.dataCenter.racks.find((rack) => rack.objectId === rackOid);
+    this.camera.position.x = rack.object.position.x + Models.RACK_WIDTH / 2.0;
+    this.camera.position.z = rack.object.position.z - 400;
+    this.camera.rotation = rack.object.rotation.negate();
+    this.camera._reset();
   }
 
   destroy() {

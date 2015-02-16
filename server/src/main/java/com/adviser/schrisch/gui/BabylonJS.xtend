@@ -5,6 +5,8 @@ import com.adviser.schrisch.model.DataCenter
 import com.adviser.schrisch.model.Parentable
 import com.adviser.schrisch.model.Rack
 import com.fasterxml.jackson.databind.ObjectMapper
+import java.beans.PropertyChangeEvent
+import java.beans.PropertyChangeListener
 import java.util.Collection
 import org.eclipse.rap.rwt.RWT
 import org.eclipse.rap.rwt.client.service.JavaScriptLoader
@@ -18,8 +20,6 @@ import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
 
 import static extension com.adviser.schrisch.Utils.*
-import java.beans.PropertyChangeListener
-import java.beans.PropertyChangeEvent
 
 class BabylonJS extends Composite implements SelectionListener, PropertyChangeListener {
 
@@ -32,6 +32,8 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
   final ObjectMapper om = new ObjectMapper()
 
   DataCenter dataCenter
+  
+  Rack selectedRack
 
   final RemoteObject remoteObject
 
@@ -64,15 +66,16 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
   override onSelectionChanged(Object selection) {
     if (selection instanceof Parentable) {
-
-      // Find selected DataCenter
       var o = selection
-      while (o !== null && !(o instanceof DataCenter)) {
+      while (o !== null) {
+        if (o instanceof DataCenter) {
+          setDataCenter(o)
+        }
+        if (o instanceof Rack) {
+          setSelectedRack(o)
+        }
         val parent = o.parent
         o = if(parent instanceof Parentable) parent else null
-      }
-      if (o != null && this.dataCenter != o) {
-        setDataCenter(o as DataCenter)
       }
     }
   }
@@ -87,6 +90,14 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
       checkWidget()
       this.dataCenter = dataCenter
       remoteObject.set('dataCenter', om.writeValueAsString(new BabylonJS.ClientDataCenter(dataCenter)))
+    }
+  }
+  
+  def setSelectedRack(Rack rack) {
+    if (rack !== null) {
+      checkWidget()
+      this.selectedRack = rack
+      remoteObject.set('selectedRack', rack.objectId)
     }
   }
 
