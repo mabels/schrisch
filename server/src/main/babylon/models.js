@@ -46,6 +46,18 @@ function createRack(name, units, scene) {
   pile4.parent = node;
   top.parent = node;
 
+  let tex = new BABYLON.DynamicTexture(name + '-text-texture', 512, scene, true);
+  tex.hasAlpha = true;
+  tex.drawText(name, null, RACK_WIDTH * 4, '32px sans-serif', 'white', 'transparent', true);
+  var plane =  BABYLON.Mesh.CreatePlane(name + "-TextPlane", RACK_WIDTH * 2, scene, true);
+  plane.material = new BABYLON.StandardMaterial(name + "TextPlaneMaterial", scene);
+  plane.material.backFaceCulling = false;
+  plane.material.specularColor = new BABYLON.Color3(0, 0, 0);
+  plane.material.diffuseTexture = tex;
+  plane.parent = node;
+  plane.position.y = RACK_BORDER + units * RACK_UNIT;
+  plane.position.z = -RACK_DEPTH / 2.0;
+  
   let root = new BABYLON.Mesh(name, scene);
   root.label = name;
   node.parent = root;

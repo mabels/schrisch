@@ -26,6 +26,8 @@ class ApplicationContext implements PropertyChangeListener {
   Workbench workbench
 
   Object modelRoot = null
+  
+  boolean loadingModel = false
 
   new() {
     addPropertyChangeListener(searcher)
@@ -40,7 +42,11 @@ class ApplicationContext implements PropertyChangeListener {
   }
 
   override propertyChange(PropertyChangeEvent evt) {
-    pcs.firePropertyChange(evt)
+    if (loadingModel) {
+      searcher.propertyChange(evt)
+    } else {
+      pcs.firePropertyChange(evt)
+    }
   }
 
 }

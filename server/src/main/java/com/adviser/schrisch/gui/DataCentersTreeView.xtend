@@ -61,21 +61,33 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
     this.applicationContext.selectionManager.provider = this
     
     this.applicationContext.doLoad = [
-      isLoading = true
-      viewer.input = SchrischFileApi.read(#[applicationContext])
-      applicationContext.modelRoot = viewer.input
-      val selection = viewer.selection
-      viewer.setSelection(selection, true)
-      isLoading = false
+      try {
+        isLoading = true
+        applicationContext.loadingModel = true
+        viewer.input = SchrischFileApi.read(#[applicationContext])
+        applicationContext.modelRoot = viewer.input
+        val selection = viewer.selection
+        viewer.setSelection(selection, true)
+      } finally {
+        applicationContext.loadingModel = false
+        isLoading = false
+      }
     ]
     this.applicationContext.doSave = [
       SchrischFileApi.write(viewer.input as DataCenters)
     ]
     this.applicationContext.doApiLoad = [
-      viewer.input = RackTablesApi.loadFromRackTables(Config.load, #[applicationContext])
-      applicationContext.modelRoot = viewer.input
-      val selection = viewer.selection
-      viewer.setSelection(selection, true)
+      try {
+        isLoading = true
+        applicationContext.loadingModel = true
+        viewer.input = RackTablesApi.loadFromRackTables(Config.load, #[applicationContext])
+        applicationContext.modelRoot = viewer.input
+        val selection = viewer.selection
+        viewer.setSelection(selection, true)
+      } finally {
+        applicationContext.loadingModel = false
+        isLoading = false
+      }
     ]
     createControls(parent)
   }
@@ -118,7 +130,7 @@ class DataCentersTreeView implements SelectionProvider, PropertyChangeListener {
         expanded = viewer.expandedTreePaths
       }
       try {
-        val results = applicationContext.searcher.search(searchBox.text ?: '', 5)
+        val results = applicationContext.searcher.search(searchBox.text ?: '', 50)
         contentProvider.searchResults = results ?: #[]
         results.forEach [
           viewer.expandToLevel(model, 0)

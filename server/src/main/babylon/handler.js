@@ -108,77 +108,11 @@ class BabylonWidget {
 
       var ground = BABYLON.Mesh.CreateGround('ground', 50000, 50000, 2, this.scene);
 
-      // generate drawing canvas
-      this.drawingCanvas = document.createElement("canvas");
-      this.drawingCanvas.id = "DebugLayerDrawingCanvas";
-      this.drawingCanvas.style.position = "absolute";
-      this.drawingCanvas.style.pointerEvents = "none";
-      this.drawingContext = this.drawingCanvas.getContext("2d");
-      this.element.parentNode.appendChild(this.drawingCanvas);
-
-      this.calculateDrawing();
-      this.scene.registerAfterRender(this.syncDrawing.bind(this));
-
       // TODO: Remove this global
       window.SCENE = this.scene;
       requestAnimationFrame(this.onRenderWebGL);
 
       rap.on('send', this.onSend);
-    }
-  }
-
-  calculateDrawing() {
-    this.drawingCanvas.style.left = "0px";
-    this.drawingCanvas.style.top = "0px";
-    this.drawingCanvas.style.width = this.engine.getRenderWidth() + "px";
-    this.drawingCanvas.style.height = this.engine.getRenderHeight() + "px";
-
-    this.drawingCanvas.width = this.engine.getRenderWidth();
-    this.drawingCanvas.height = this.engine.getRenderHeight();
-  }
-
-  syncDrawing() {
-    this.drawingContext.clearRect(0, 0, this.drawingCanvas.width, this.drawingCanvas.height);
-    var engine = this.engine;
-    var viewport = this.scene.activeCamera.viewport;
-    var globalViewport = viewport.toGlobal(engine);
-
-    // Meshes
-    var meshes = this.scene.getActiveMeshes();
-    for (var index = 0; index < meshes.length; index++) {
-      var mesh = meshes.data[index];
-      if (mesh.label) {
-        var position = mesh.getBoundingInfo().boundingSphere.center;
-        var projectedPosition = BABYLON.Vector3.Project(
-          position,
-          mesh.getWorldMatrix(),
-          this.scene.getTransformMatrix(),
-          globalViewport);
-        this.renderLabel(mesh.label, projectedPosition, 12, 'black');
-      }
-    }
-  }
-
-  renderLabel(text, projectedPosition, labelOffset, color) {
-    if (projectedPosition.z > 0 && projectedPosition.z < 1.0) {
-      this.drawingContext.font = "normal 12px Segoe UI";
-      var textMetrics = this.drawingContext.measureText(text);
-      var centerX = projectedPosition.x - textMetrics.width / 2;
-      var centerY = projectedPosition.y;
-      this.drawingContext.beginPath();
-      this.drawingContext.rect(centerX - 5, centerY - labelOffset, textMetrics.width + 10, 17);
-      this.drawingContext.fillStyle = color;
-      this.drawingContext.globalAlpha = 0.5;
-      this.drawingContext.fill();
-      this.drawingContext.globalAlpha = 1.0;
-      this.drawingContext.strokeStyle = '#FFFFFF';
-      this.drawingContext.lineWidth = 1;
-      this.drawingContext.stroke();
-      this.drawingContext.fillStyle = "#FFFFFF";
-      this.drawingContext.fillText(text, centerX, centerY);
-      this.drawingContext.beginPath();
-      this.drawingContext.arc(projectedPosition.x, centerY, 2, 0, 2 * Math.PI, false);
-      this.drawingContext.fill();
     }
   }
 
@@ -216,7 +150,7 @@ class BabylonWidget {
     // ... and build up new
     this.dataCenter.racks.forEach((rack, i) => {
       var glRack = Models.createRack(rack.ident, rack.height, this.scene);
-      glRack.position = new BABYLON.Vector3((Models.RACK_WIDTH + 5) * i, 0, 400);
+      glRack.position = new BABYLON.Vector3((Models.RACK_WIDTH + 20) * i, 0, 400);
       rack.object = glRack;
     });
     requestAnimationFrame(this.onRenderWebGL);
