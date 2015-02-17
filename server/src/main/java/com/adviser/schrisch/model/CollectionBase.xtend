@@ -74,10 +74,22 @@ class CollectionBase<T extends Parentable & AddPropertyChangeListener & Identabl
     return type
   }
 
+  def Collection<?> getCollection() {
+    valuesTyped()
+  }
+
+  def setCollection(Collection<T> c) {
+    backRef.keySet.forEach[t| remove(t)]
+    c.forEach[t| add(t)]
+  }
+
+
+  @JsonIgnore
   override Collection<?> values() {
     valuesTyped()
   }
 
+  @JsonIgnore
   def Collection<T> valuesTyped() {
     val ret = new ArrayList(ordered.size)
     for (i : ordered.entrySet) {
