@@ -154,6 +154,7 @@ class BabylonWidget {
     if (this.enabled) {
       this.oid2gl = {};
       this.root = new BABYLON.Mesh('root', this.scene);
+//console.log(dataCenter);
       dataCenter = JSON.parse(dataCenter);
       // ... and build up new
       dataCenter.racks.forEach((rack, i) => {
@@ -163,7 +164,7 @@ class BabylonWidget {
         glRack.parent = this.root
         rack.contents.forEach((content) => {
           if (content.unitNumber > 0) {
-            let glDevice = Models.createDevice(content.ident, content.unitNumber, 1, this.scene);
+            let glDevice = Models.createDevice(content.ident, content.unitNumber, content.box, this.scene);
             glDevice.parent = glRack;
             glDevice.position = new BABYLON.Vector3(0, content.unitNumber * Models.RACK_UNIT, 0);
             this.oid2gl[content.objectId] = glDevice;

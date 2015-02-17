@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.beans.PropertyChangeListener
 import org.apache.commons.lang.math.Fraction
-import java.util.Arrays
 
 @Observable
 class Content extends Base {

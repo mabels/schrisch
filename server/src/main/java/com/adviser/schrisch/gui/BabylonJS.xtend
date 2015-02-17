@@ -1,5 +1,6 @@
 package com.adviser.schrisch.gui
 
+import com.adviser.schrisch.model.Box
 import com.adviser.schrisch.model.Content
 import com.adviser.schrisch.model.DataCenter
 import com.adviser.schrisch.model.Parentable
@@ -174,7 +175,46 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def String getIdent() { delegate.ident }
 
-    def Integer getUnitNumber() { delegate.box.startHeight }
+    def Integer getUnitNumber() {
+      try {
+        delegate.box.startHeight
+      } catch (RuntimeException e) {
+        null
+      }
+    }
+
+    def ClientBox getBox() {
+      try {
+        val box = delegate.box as Box
+        if (box !== null) {
+          new ClientBox(box)
+        }
+      } catch (RuntimeException e) {
+        null
+      }
+    }
+
+  }
+
+  static class ClientBox {
+
+    Box delegate
+
+    new(Box box) {
+      delegate = box
+    }
+
+    def double getLeft() { delegate.startWidth?.doubleValue }
+
+    def double getWidth() { delegate.width?.doubleValue }
+
+    def double getBottom() { delegate.startHeight }
+
+    def double getHeight() { delegate.height }
+
+    def double getFront() { delegate.startDeep?.doubleValue }
+
+    def double getDeep() { delegate.deep?.doubleValue }
 
   }
 

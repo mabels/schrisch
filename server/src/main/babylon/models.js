@@ -65,15 +65,22 @@ function createRack(name, units, scene) {
   return root;
 }
 
-function createDevice(name, unit, units, scene) {
+function createDevice(name, unit, extend, scene) {
   let mat = new BABYLON.StandardMaterial(name + '-material', scene);
   let col = (unit / 47.0 / 2.0) + 0.25;
   mat.diffuseColor = new BABYLON.Color3(col, col / 2.0, col / 2.0);
 
+  const BOX_WIDTH = RACK_WIDTH - 2.0;
+  const BOX_HEIGHT = RACK_UNIT - 0.5;
+  const BOX_DEPTH = RACK_DEPTH - 2.0;
+  
   let box = BABYLON.Mesh.CreateBox(name + '-box', 1, scene);
   box.material = mat;
-  box.scaling = new BABYLON.Vector3(RACK_WIDTH - 2.0, (RACK_UNIT * units) - 1.0, RACK_DEPTH - 2.0);
-  box.position = new BABYLON.Vector3(RACK_WIDTH / 2.0, 0.5, RACK_DEPTH / 2.0);
+  box.scaling = new BABYLON.Vector3(BOX_WIDTH * extend.width, BOX_HEIGHT * extend.height, BOX_DEPTH * extend.deep);
+  box.position = new BABYLON.Vector3(
+      RACK_WIDTH / 2.0 + RACK_WIDTH / 2.0 * extend.left, 
+      RACK_UNIT / 2.0,
+      RACK_DEPTH / 2.0 + RACK_DEPTH / 2.0 * extend.front);
 
   let tex = new BABYLON.DynamicTexture(name + '-text-texture', 512, scene, true);
   tex.hasAlpha = true;
@@ -84,7 +91,7 @@ function createDevice(name, unit, units, scene) {
   plane.material.specularColor = new BABYLON.Color3(1, 1, 1);
   plane.material.diffuseTexture = tex;
   plane.position.x = RACK_WIDTH / 2.0;
-  plane.position.y = -(RACK_UNIT * units) / 2.0;
+  plane.position.y = -(RACK_UNIT * box.height) / 2.0;
   
   let root = new BABYLON.Mesh(name, scene);
   root.label = name;
