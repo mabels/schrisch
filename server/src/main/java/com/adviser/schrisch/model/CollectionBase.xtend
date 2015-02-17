@@ -34,7 +34,10 @@ class CollectionBase<T extends Parentable & AddPropertyChangeListener & Identabl
           if(t != null) {
             return // found the ident in map
           }
-          ordered.remove(backRef.remove(t))
+          val tIdent = backRef.remove(evt.source)
+          if (tIdent != null) { 
+            ordered.remove(tIdent)     
+          }
           backRef.put(evt.source as T, ident)
           ordered.put(ident, evt.source as T)
         }

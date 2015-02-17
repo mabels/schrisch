@@ -159,7 +159,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def Integer getHeight() { delegate.height }
 
-    def Collection<ClientContent> getContents() { delegate.contents.collection.map[new ClientContent(it)].toList }
+    def Collection<ClientContent> getContents() { delegate.contents.valuesTyped.map[new ClientContent(it)].toList }
   }
 
   static class ClientContent {
@@ -174,9 +174,8 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def String getIdent() { delegate.ident }
 
-    def Integer getUnitNumber() { delegate?.spaces?.collection?.head?.unit_no }
+    def Integer getUnitNumber() { delegate.box.startHeight }
 
-    def Collection<Content> getContents() { delegate.contents.valuesTyped }
   }
 
 }
