@@ -16,6 +16,8 @@ import org.eclipse.rap.rwt.remote.OperationHandler
 import org.eclipse.rap.rwt.remote.RemoteObject
 import org.eclipse.rap.rwt.widgets.WidgetUtil
 import org.eclipse.swt.widgets.Composite
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import static com.adviser.schrisch.gui.SWTExtensions.*
 import static org.eclipse.swt.SWT.*
@@ -165,6 +167,8 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
   static class ClientContent {
 
+    static final Logger LOGGER = LoggerFactory.getLogger(ClientContent)
+
     Content delegate
 
     new(Content content) {
@@ -179,6 +183,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
       try {
         delegate.box.startHeight
       } catch (RuntimeException e) {
+        LOGGER.warn('Failed to get UnitNumber for a device/box/content (' + objectId + ')', e)
         null
       }
     }
@@ -190,6 +195,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
           new ClientBox(box)
         }
       } catch (RuntimeException e) {
+        LOGGER.warn('Failed to get device/box/content extends (' + objectId + ')', e)
         null
       }
     }
