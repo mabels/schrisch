@@ -80,18 +80,20 @@ function createDevice(name, unit, extend, scene) {
   box.position = new BABYLON.Vector3(
       RACK_WIDTH / 2.0 + RACK_WIDTH / 2.0 * extend.left, 
       RACK_UNIT / 2.0,
-      RACK_DEPTH / 2.0 + RACK_DEPTH / 2.0 * extend.front);
+      BOX_DEPTH / 2.0 * extend.deep + BOX_DEPTH * extend.front);
 
   let tex = new BABYLON.DynamicTexture(name + '-text-texture', 512, scene, true);
   tex.hasAlpha = true;
   tex.drawText(name, null, RACK_WIDTH * 4, '32px sans-serif', 'white', 'transparent', true);
-  var plane =  BABYLON.Mesh.CreatePlane(name + "-TextPlane", RACK_WIDTH, scene, true);
+  var plane =  BABYLON.Mesh.CreatePlane(name + "-TextPlane", BOX_WIDTH * extend.width, scene, true);
   plane.material = new BABYLON.StandardMaterial(name + "TextPlaneMaterial", scene);
   plane.material.backFaceCulling = false;
   plane.material.specularColor = new BABYLON.Color3(1, 1, 1);
   plane.material.diffuseTexture = tex;
-  plane.position.x = RACK_WIDTH / 2.0;
-  plane.position.y = -(RACK_UNIT * box.height) / 2.0;
+  plane.position = new BABYLON.Vector3(
+      RACK_WIDTH / 2.0 + RACK_WIDTH / 2.0 * extend.left, 
+      -0.5,
+      BOX_DEPTH * extend.front - 0.5);
   
   let root = new BABYLON.Mesh(name, scene);
   root.label = name;

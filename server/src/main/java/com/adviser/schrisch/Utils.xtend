@@ -55,4 +55,8 @@ class Utils {
     return list
   }
 
+  def static ifNotEmpty(String s) {
+    return if(!s?.trim.isNullOrEmpty) s else null
+  }
+
 }

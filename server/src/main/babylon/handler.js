@@ -154,7 +154,6 @@ class BabylonWidget {
     if (this.enabled) {
       this.oid2gl = {};
       this.root = new BABYLON.Mesh('root', this.scene);
-//console.log(dataCenter);
       dataCenter = JSON.parse(dataCenter);
       // ... and build up new
       dataCenter.racks.forEach((rack, i) => {

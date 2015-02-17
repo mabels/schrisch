@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore
 import java.beans.PropertyChangeListener
 import org.apache.commons.lang.math.Fraction
 
+import static extension com.adviser.schrisch.Utils.ifNotEmpty
+
 @Observable
 class Content extends Base {
 
@@ -64,29 +66,30 @@ class Content extends Base {
   }
 
   override getIdent() {
-    Utils.clean_fname(label?.trim ?: name?.trim ?: id ?: super.ident)
+    Utils.clean_fname(label.ifNotEmpty ?: name.ifNotEmpty ?: id.ifNotEmpty ?: super.ident)
   }
 
   @JsonIgnore
   def getBox() {
 
     //System.err.println("space=>begin");
-    val sorted = spaces.valuesTyped.sortWith([ a, b |
+    val sorted = spaces.valuesTyped.sortWith(
+      [ a, b |
         var cval = a.unit_no.compareTo(b.unit_no)
-        if(cval == 0) {
+        if (cval == 0) {
 
           //luck lexical sorted ["front","middle", "rear"] 
           cval = a.atom.compareTo(b.atom)
         }
         cval
       ])
-    if(sorted.length > 0) {
+    if (sorted.length > 0) {
       val deepmap = #{"front" -> Fraction.ZERO, "mid" -> Fraction.ONE_THIRD, "rear" -> Fraction.TWO_THIRDS}
       val rowPrev = #{"mid" -> "front", "rear" -> "mid"}
-      val box = new Box  
+      val box = new Box
       sorted.forEach [ space |
         //System.err.println("space=>" + space.unit_no + ":" + space.atom)
-        if(box.last == null) {
+        if (box.last == null) {
           box.startHeight = space.unit_no
           box.height = 1
           box.startDeep = deepmap.get(space.atom)
@@ -94,9 +97,10 @@ class Content extends Base {
           box.startBox = space
           box.firstRowLast = space
         } else {
-          if(space.unit_no.equals(box.last.unit_no)) {
+          if (space.unit_no.equals(box.last.unit_no)) {
+
             // same row
-            if(!box.last.atom.equals(rowPrev.get(space.atom))) {
+            if (!box.last.atom.equals(rowPrev.get(space.atom))) {
               throw new RuntimeException(
                 "This space is not connected in the deep:" + box.last.atom + ":" + space.atom)
             }
@@ -105,23 +109,23 @@ class Content extends Base {
               box.firstRowLast = space
             }
           } else {
-            if(!box.last.unit_no.equals(space.unit_no - 1)) {
+            if (!box.last.unit_no.equals(space.unit_no - 1)) {
               throw new RuntimeException(
                 "This space is not connected in the height:" + box.startBox.unit_no + ":" +
                   space.unit_no)
-            }    
-            if(!box.startBox.atom.equals(space.atom)) {
+            }
+            if (!box.startBox.atom.equals(space.atom)) {
               throw new RuntimeException(
                 "This space is not connected at the starting deep:" + box.startBox.atom + ":" +
                   space.atom)
             }
             box.height = box.height + 1
             box.deep = Fraction.ONE_THIRD
-          } 
+          }
         }
         box.last = space
       ]
-      if(!box.firstRowLast.atom.equals(box.last.atom)) {
+      if (!box.firstRowLast.atom.equals(box.last.atom)) {
         throw new RuntimeException(
           "The box is not closed:" + box.firstRowLast.atom + ":" + box.last.atom
         )
