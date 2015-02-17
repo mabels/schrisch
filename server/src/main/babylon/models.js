@@ -70,7 +70,7 @@ function createDevice(name, unit, units, scene) {
   let col = (unit / 47.0 / 2.0) + 0.25;
   mat.diffuseColor = new BABYLON.Color3(col, col / 2.0, col / 2.0);
 
-  let box = BABYLON.Mesh.CreateBox(name + '-foot', 1, scene);
+  let box = BABYLON.Mesh.CreateBox(name + '-box', 1, scene);
   box.material = mat;
   box.scaling = new BABYLON.Vector3(RACK_WIDTH - 2.0, (RACK_UNIT * units) - 1.0, RACK_DEPTH - 2.0);
   box.position = new BABYLON.Vector3(RACK_WIDTH / 2.0, 0.5, RACK_DEPTH / 2.0);

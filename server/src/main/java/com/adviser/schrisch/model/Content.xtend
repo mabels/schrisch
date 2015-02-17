@@ -4,11 +4,9 @@ import com.adviser.schrisch.Utils
 import com.adviser.xtend.annotation.Observable
 import com.fasterxml.jackson.annotation.JacksonInject
 import com.fasterxml.jackson.annotation.JsonCreator
+import com.fasterxml.jackson.annotation.JsonIgnore
 import java.beans.PropertyChangeListener
-import org.eclipse.xtend.lib.annotations.Data
-import java.util.Comparator
 import java.util.LinkedList
-import java.util.Arrays
 import org.apache.commons.lang.math.Fraction
 
 @Observable
@@ -70,53 +68,8 @@ class Content extends Base {
     Utils.clean_fname(label?.trim ?: name?.trim ?: id ?: super.ident)
   }
 
-  static class Box {
-    var Fraction start_width = Fraction.ZERO // absolute left
-    var Fraction width = Fraction.ONE // width is 100%
-    var int startHeight // in U's
-    var int height // in U's
-    var Fraction startDeep
-    var Fraction deep
-    var Space last = null
-    var Space startBox = null
-    var Space firstRowLast = null
 
-    new() {
-    }
-
-    new(Fraction sw, Fraction w, int sh, int h, Fraction sd, Fraction d) {
-      start_width = sw
-      width = w
-      startHeight = sh
-      height = h
-      startDeep = sd
-      deep = d
-    }
-
-    override equals(Object o) {
-      val Box other = o as Box
-      for (i : #[
-        #[this.start_width, other.start_width],
-        #[this.width, other.width],
-        #[this.startHeight, other.startHeight],
-        #[this.height, other.height],
-        #[this.startDeep, other.startDeep],
-        #[this.deep, other.deep]
-      ]) {
-        val ret = i.get(0).equals(i.get(1))
-        if(!ret) {
-          return false
-        }
-      }
-      return true
-    }
-
-    override toString() {
-      return "<Box@"+hashCode+":sw="+start_width+":w="+width+":sh="+startHeight+":h="+height+":sd="+startDeep+":d="+deep+">"
-      
-    }
-  }
-
+  @JsonIgnore
   def getBoxes() {
 
     //System.err.println("space=>begin");
@@ -167,7 +120,7 @@ class Content extends Base {
                 "This space is not connected at the starting deep:" + box.startBox.atom + ":" +
                   space.atom)
             }
-            box.height += 1
+            box.height = box.height + 1
             box.deep = Fraction.ONE_THIRD
           } 
         }
