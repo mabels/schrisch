@@ -14,7 +14,7 @@ class Rack extends Base implements Cloneable {
   String name
 
   @Editable
-  String height
+  Integer height
 
   @Editable
   String comment
@@ -35,7 +35,7 @@ class Rack extends Base implements Cloneable {
   static def create(PropertyChangeListener[] pcls, String name, int height, String comment, String row) {
     val my = new Rack(pcls)
     my.setName(name)
-    my.setHeight("" + height)
+    my.setHeight(height)
     my.setComment(comment)
     my.setRow(row)
     return my

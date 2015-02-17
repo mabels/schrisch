@@ -158,7 +158,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def String getName() { delegate.name }
 
-    def String getHeight() { delegate.height }
+    def Integer getHeight() { delegate.height }
 
     def String getComment() { delegate.comment }
 

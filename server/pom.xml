@@ -11,11 +11,17 @@
 
   <properties>
     <slf4j.version>1.7.9</slf4j.version>
-
     <jetty.version>9.2.6.v20141205</jetty.version>
     <jackson.version>2.5.0</jackson.version>
   </properties>
   <dependencies>
+
+    <dependency>
+      <groupId>commons-lang</groupId>
+      <artifactId>commons-lang</artifactId>
+      <version>2.6</version>
+    </dependency>
+
     <dependency>
       <groupId>com.adviser</groupId>
       <artifactId>schrisch-annotation</artifactId>

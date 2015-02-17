@@ -9,7 +9,7 @@ import java.beans.PropertyChangeListener
 class Space extends Base {
 
   @Editable
-  String unit_no
+  Integer unit_no
 
   @Editable
   String atom
@@ -18,8 +18,13 @@ class Space extends Base {
   new(@JacksonInject("pcls") PropertyChangeListener[] pcls) {
     pcls.forEach[pcl|this.addPropertyChangeListener(pcl)]
   }
+  
+  new(Integer unit_no, String atom) {
+    this.unit_no = unit_no
+    this.atom = atom
+  }
 
-  static def create(PropertyChangeListener[] pcls, String unit_no, String atom) {
+  static def create(PropertyChangeListener[] pcls, Integer unit_no, String atom) {
     val my = new Space(pcls)
     my.setUnit_no(unit_no)
     my.setAtom(atom)
