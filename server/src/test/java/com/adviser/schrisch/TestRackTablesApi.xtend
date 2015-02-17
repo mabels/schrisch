@@ -9,6 +9,7 @@ import static org.junit.Assert.*
 import com.adviser.schrisch.model.Content
 import com.adviser.schrisch.model.Space
 import org.apache.commons.lang.math.Fraction
+import com.adviser.schrisch.model.Box
 
 class TestRackTablesApi {
 
@@ -29,29 +30,29 @@ class TestRackTablesApi {
   }
 
   @Test def testBoxesSimpleFront() {
-    assertArrayEquals(#[new Content.Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.ZERO, Fraction.ONE_THIRD)], createSpaces(#[new Space(4, "front")]))
+    assertArrayEquals(#[new Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.ZERO, Fraction.ONE_THIRD)], createSpaces(#[new Space(4, "front")]))
   }
 
   @Test def testBoxesSimpleMid() {
-    assertArrayEquals(#[new Content.Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.ONE_THIRD, Fraction.ONE_THIRD)], createSpaces(#[new Space(4, "mid")]))
+    assertArrayEquals(#[new Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.ONE_THIRD, Fraction.ONE_THIRD)], createSpaces(#[new Space(4, "mid")]))
   }
 
   @Test def testBoxesSimpleRear() {
-    assertArrayEquals(#[new Content.Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.TWO_THIRDS, Fraction.ONE_THIRD)], createSpaces(#[new Space(4, "rear")]))
+    assertArrayEquals(#[new Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.TWO_THIRDS, Fraction.ONE_THIRD)], createSpaces(#[new Space(4, "rear")]))
   }
 
   @Test def testBoxesFullLength() {
-    assertArrayEquals(#[new Content.Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.ZERO, Fraction.ONE)],
+    assertArrayEquals(#[new Box(Fraction.ZERO, Fraction.ONE, 4, 1, Fraction.ZERO, Fraction.ONE)],
       createSpaces(#[new Space(4, "front"), new Space(4, "mid"), new Space(4, "rear")]))
   }
 
   @Test def testBoxesFrontDoubleHeight() {
-    assertArrayEquals(#[new Content.Box(Fraction.ZERO, Fraction.ONE, 4, 2, Fraction.ZERO, Fraction.ONE_THIRD)],
+    assertArrayEquals(#[new Box(Fraction.ZERO, Fraction.ONE, 4, 2, Fraction.ZERO, Fraction.ONE_THIRD)],
       createSpaces(#[new Space(4, "front"), new Space(5, "front")]))
   }
 
   @Test def testBoxesFrontMidDoubleHeight() {
-    assertArrayEquals(#[new Content.Box(Fraction.ZERO, Fraction.ONE, 4, 2, Fraction.ZERO, Fraction.TWO_THIRDS)],
+    assertArrayEquals(#[new Box(Fraction.ZERO, Fraction.ONE, 4, 2, Fraction.ZERO, Fraction.TWO_THIRDS)],
       createSpaces(#[new Space(4, "front"), new Space(5, "front"), new Space(4, "mid"), new Space(5, "mid")]))
   }
 
