@@ -147,40 +147,43 @@ class BabylonWidget {
 
   setDataCenter(dataCenter) {
     // Cleanup mess...
-    if (this.dataCenter) {
-      this.dataCenter.racks.forEach((rack, i) => {
-        rack.object.dispose();
+    if (this.root) {
+      this.root.dispose();
+      this.root = null;
+    }
+    if (this.enabled) {
+      this.oid2gl = {};
+      this.root = new BABYLON.Mesh('root', this.scene);
+      dataCenter = JSON.parse(dataCenter);
+      // ... and build up new
+      dataCenter.racks.forEach((rack, i) => {
+        let glRack = Models.createRack(rack.ident, rack.height, this.scene);
+        glRack.position = new BABYLON.Vector3((Models.RACK_WIDTH + 20) * i, 0, 400);
+        this.oid2gl[rack.objectId] = glRack;
+        glRack.parent = this.root
         rack.contents.forEach((content) => {
-          content.object.dispose();
+          if (content.unitNumber > 0) {
+            let glDevice = Models.createDevice(content.ident, content.unitNumber, 1, this.scene);
+            glDevice.parent = glRack;
+            glDevice.position = new BABYLON.Vector3(0, content.unitNumber * Models.RACK_UNIT, 0);
+            this.oid2gl[content.objectId] = glDevice;
+          }
         });
       });
+      this.camera.position = new BABYLON.Vector3(0, 180.0, -150.0);
+      requestAnimationFrame(this.onRenderWebGL);
     }
-    this.dataCenter = JSON.parse(dataCenter);
-    // ... and build up new
-    this.dataCenter.racks.forEach((rack, i) => {
-      let glRack = Models.createRack(rack.ident, rack.height, this.scene);
-      glRack.position = new BABYLON.Vector3((Models.RACK_WIDTH + 20) * i, 0, 400);
-      rack.object = glRack;
-      rack.contents.forEach((content) => {
-        if (content.spaces.collection.length > 0) {
-          let glDevice = Models.createDevice(content.label, content.spaces.collection[0].unit_no, 1, this.scene);
-          glDevice.parent = glRack;
-          glDevice.position = new BABYLON.Vector3(0, content.spaces.collection[0].unit_no * Models.RACK_UNIT, 0);
-          content.object = glDevice;
-        }
-      });
-    });
-    this.camera.position = new BABYLON.Vector3(0, 180.0, -150.0);
-    requestAnimationFrame(this.onRenderWebGL);
   }
   
   setSelectedRack(rackOid) {
-    let rack = this.dataCenter.racks.find((rack) => rack.objectId === rackOid);
-    this.camera.position.x = rack.object.position.x + Models.RACK_WIDTH / 2.0;
-    this.camera.position.z = rack.object.position.z - 400;
-    this.camera.rotation = rack.object.rotation.negate();
-    this.camera._reset();
-    requestAnimationFrame(this.onRenderWebGL);
+    if (this.oid2gl) {
+      let rack = this.oid2gl[rackOid];
+      this.camera.position.x = rack.position.x + Models.RACK_WIDTH / 2.0;
+      this.camera.position.z = rack.position.z - 400;
+      this.camera.rotation = rack.rotation.negate();
+      this.camera._reset();
+      requestAnimationFrame(this.onRenderWebGL);
+    }
   }
   
   setEnabled(enabled) {

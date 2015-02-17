@@ -75,7 +75,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
       var o = selection
       while (o !== null) {
         if (o instanceof DataCenter) {
-          if (this.dataCenter != o)  {
+          if (this.dataCenter != o) {
             setDataCenter(o)
           }
         }
@@ -91,6 +91,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
   }
 
   override propertyChange(PropertyChangeEvent evt) {
+
     // Trigger redraw
     setDataCenter(this.dataCenter)
   }
@@ -99,7 +100,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
     if (dataCenter !== null) {
       checkWidget()
       this.dataCenter = dataCenter
-      remoteObject.set('dataCenter', om.writeValueAsString(new BabylonJS.ClientDataCenter(dataCenter)))
+      remoteObject.set('dataCenter', om.writeValueAsString(new ClientDataCenter(dataCenter)))
     }
   }
 
@@ -130,17 +131,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def String getIdent() { delegate.ident }
 
-    def String getName() { delegate.name }
-
-    def String getStreet() { delegate.street }
-
-    def String getZipCode() { delegate.zipCode }
-
-    def String getCity() { delegate.city }
-
-    def String getCountry() { delegate.country }
-
-    def Collection<ClientRack> getRacks() { delegate.racks.collection.map[new BabylonJS.ClientRack(it)].toList }
+    def Collection<ClientRack> getRacks() { delegate.racks.collection.map[new ClientRack(it)].toList }
 
   }
 
@@ -156,15 +147,25 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def String getIdent() { delegate.ident }
 
-    def String getName() { delegate.name }
-
     def Integer getHeight() { delegate.height }
 
-    def String getComment() { delegate.comment }
+    def Collection<ClientContent> getContents() { delegate.contents.collection.map[new ClientContent(it)].toList }
+  }
 
-    def String getRow() { delegate.row }
+  static class ClientContent {
 
-    def Collection<Content> getContents() { delegate.contents.collection }
+    Content delegate
+
+    new(Content content) {
+      delegate = content
+    }
+
+    def String getObjectId() { delegate.objectId }
+
+    def String getIdent() { delegate.ident }
+
+    def Integer getUnitNumber() { delegate?.spaces?.collection?.head?.unit_no }
+
   }
 
 }

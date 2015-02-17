@@ -132,23 +132,35 @@ class ValueEditingSupport extends EditingSupport {
     val item = element.mutable
     if (item.type === String)
       new TextCellEditor(viewer.control as Composite)
-    else if (item.type === Boolean.TYPE)
+    else if (item.type === Integer || item.type === Integer.TYPE)
+      new TextCellEditor(viewer.control as Composite)
+    else if (item.type === Boolean || item.type === Boolean.TYPE)
       new CheckboxCellEditor(viewer.control as Composite)
   }
 
   override protected getValue(Object element) {
     val item = element.mutable
-    if (item !== null) {
-      item.get ?: ''
-    } else {
-      (element as Pair<String, Object>).value ?: ''
-    }
+    val value = if (item !== null) {
+        item.get ?: ''
+      } else {
+        (element as Pair<String, Object>).value ?: ''
+      }
+    if (item.type === String)
+      return value.toString
+    else if (item.type === Integer || item.type === Integer.TYPE)
+      return value.toString
+    else if (item.type === Boolean || item.type === Boolean.TYPE)
+      return value
   }
 
   override protected setValue(Object element, Object value) {
     val item = element.mutable
     if (item !== null) {
-      item.set(value)
+      if (item.type === Integer || item.type === Integer.TYPE) {
+        item.set(Integer.parseInt(value.toString))
+      } else {
+        item.set(value)
+      }
       viewer.refresh(element)
     }
   }
