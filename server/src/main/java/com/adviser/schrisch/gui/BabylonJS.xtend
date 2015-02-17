@@ -131,7 +131,17 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def String getIdent() { delegate.ident }
 
-    def Collection<ClientRack> getRacks() { delegate.racks.collection.map[new ClientRack(it)].toList }
+    def String getName() { delegate.name }
+
+    def String getStreet() { delegate.street }
+
+    def String getZipCode() { delegate.zipCode }
+
+    def String getCity() { delegate.city }
+
+    def String getCountry() { delegate.country }
+
+    def Collection<ClientRack> getRacks() { delegate.racks.valuesTyped.map[new BabylonJS.ClientRack(it)].toList }
 
   }
 
@@ -166,6 +176,7 @@ class BabylonJS extends Composite implements SelectionListener, PropertyChangeLi
 
     def Integer getUnitNumber() { delegate?.spaces?.collection?.head?.unit_no }
 
+    def Collection<Content> getContents() { delegate.contents.valuesTyped }
   }
 
 }

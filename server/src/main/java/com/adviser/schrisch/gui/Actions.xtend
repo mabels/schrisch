@@ -18,6 +18,8 @@ import org.eclipse.jface.action.Action
 import org.eclipse.jface.resource.ImageDescriptor
 import org.eclipse.xtend.lib.annotations.Accessors
 import org.eclipse.jface.action.IAction
+import com.adviser.schrisch.model.Identable
+import com.adviser.schrisch.model.Base
 
 class ToolbarAction extends Action {
 
@@ -101,7 +103,7 @@ class DeleteAction extends ToolbarAction {
     if (selection instanceof Parentable) {
       val parent = selection.parent
       if (parent instanceof CollectionBase) {
-        parent.remove(selection)
+        parent.remove(selection as Base)
       }
     }
   }

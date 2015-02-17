@@ -5,12 +5,13 @@ import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.util.UUID
 
-class Base implements Identable, Parentable, Elementable {
+abstract class Base implements Identable, Parentable, Elementable, AddPropertyChangeListener {
   @JsonIgnore
   var Object _parent = null
 
   var String objectId = null
-
+  
+ 
   def setObjectId(String _objectId) {
     objectId = _objectId
   }

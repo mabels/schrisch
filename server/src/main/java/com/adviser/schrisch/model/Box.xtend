@@ -5,7 +5,7 @@ import org.eclipse.xtend.lib.annotations.Accessors
 
 class Box {
   @Accessors
-  Fraction start_width = Fraction.ZERO // absolute left
+  Fraction startWidth = Fraction.ZERO // absolute left
   @Accessors
   Fraction width = Fraction.ONE // width is 100%
   @Accessors
@@ -27,7 +27,7 @@ class Box {
   }
 
   new(Fraction sw, Fraction w, int sh, int h, Fraction sd, Fraction d) {
-    start_width = sw
+    startWidth = sw
     width = w
     startHeight = sh
     height = h
@@ -38,7 +38,7 @@ class Box {
   override equals(Object o) {
     val Box other = o as Box
     for (i : #[
-      #[this.start_width, other.start_width],
+      #[this.startWidth, other.startWidth],
       #[this.width, other.width],
       #[this.startHeight, other.startHeight],
       #[this.height, other.height],
@@ -53,9 +53,33 @@ class Box {
     return true
   }
 
+  static class BoxAsDouble {
+    @Accessors
+    val double startWidth
+    @Accessors
+    val double width
+    @Accessors
+    val double startHeight 
+    @Accessors
+    val double height
+    @Accessors
+    val double startDeep
+    @Accessors
+    val double deep
+
+    new(Box box) {
+      startWidth = box.startWidth.doubleValue
+      width = box.width.doubleValue
+      startHeight = box.startHeight.doubleValue
+      height = box.height
+      startDeep = box.startDeep.doubleValue
+      deep = box.deep.doubleValue
+    }
+  }
+
   override toString() {
-    return "<Box@" + hashCode + ":sw=" + start_width + ":w=" + width + ":sh=" + startHeight + ":h=" + height + ":sd=" +
-      startDeep + ":d=" + deep + ">"
+    return "<Box@" + hashCode + ":sw=" + startWidth + ":w=" + width + ":sh=" + startHeight + ":h=" + height +
+      ":sd=" + startDeep + ":d=" + deep + ">"
 
   }
 }

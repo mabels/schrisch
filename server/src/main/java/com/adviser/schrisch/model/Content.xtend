@@ -6,8 +6,8 @@ import com.fasterxml.jackson.annotation.JacksonInject
 import com.fasterxml.jackson.annotation.JsonCreator
 import com.fasterxml.jackson.annotation.JsonIgnore
 import java.beans.PropertyChangeListener
-import java.util.LinkedList
 import org.apache.commons.lang.math.Fraction
+import java.util.Arrays
 
 @Observable
 class Content extends Base {
@@ -68,14 +68,11 @@ class Content extends Base {
     Utils.clean_fname(label?.trim ?: name?.trim ?: id ?: super.ident)
   }
 
-
   @JsonIgnore
-  def getBoxes() {
+  def getBox() {
 
     //System.err.println("space=>begin");
-    val ret = new LinkedList<Box>()
-    val sorted = spaces.collection.sortWith(
-      [ a, b |
+    val sorted = spaces.valuesTyped.sortWith([ a, b |
         var cval = a.unit_no.compareTo(b.unit_no)
         if(cval == 0) {
 
@@ -87,9 +84,8 @@ class Content extends Base {
     if(sorted.length > 0) {
       val deepmap = #{"front" -> Fraction.ZERO, "mid" -> Fraction.ONE_THIRD, "rear" -> Fraction.TWO_THIRDS}
       val rowPrev = #{"mid" -> "front", "rear" -> "mid"}
-      ret.push(new Box()) // currently we can only sum up one box
+      val box = new Box  
       sorted.forEach [ space |
-        val box = ret.last
         //System.err.println("space=>" + space.unit_no + ":" + space.atom)
         if(box.last == null) {
           box.startHeight = space.unit_no
@@ -126,13 +122,14 @@ class Content extends Base {
         }
         box.last = space
       ]
-      if(!ret.last.firstRowLast.atom.equals(ret.last.last.atom)) {
+      if(!box.firstRowLast.atom.equals(box.last.atom)) {
         throw new RuntimeException(
-          "The box is not closed:" + ret.last.firstRowLast.atom + ":" + ret.last.last.atom
+          "The box is not closed:" + box.firstRowLast.atom + ":" + box.last.atom
         )
       }
+      return box
     }
-    ret.toArray(newArrayOfSize(ret.length))
+    return null
   }
 
 }

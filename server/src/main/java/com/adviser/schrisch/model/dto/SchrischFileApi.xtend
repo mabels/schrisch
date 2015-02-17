@@ -76,15 +76,15 @@ class SchrischFileApi {
         }
       }).forEach [ contentFile |
       rack.contents.add(yf.reader(Content).with(inject).readValue(contentFile))
-      rack.contents.collection.forEach [
+      rack.contents.valuesTyped.forEach [
         spaces.parent = it
-        spaces.collection.forEach[space|space.parent = spaces]
+        spaces.valuesTyped.forEach[space|space.parent = spaces]
         ports.parent = it
-        ports.collection.forEach[port|port.parent = ports]
+        ports.valuesTyped.forEach[port|port.parent = ports]
         ips.parent = it
-        ips.collection.forEach[ip|ip.parent = ips]
+        ips.valuesTyped.forEach[ip|ip.parent = ips]
         attributes.parent = it
-        attributes.collection.forEach[attribute|attribute.parent = attributes]
+        attributes.valuesTyped.forEach[attribute|attribute.parent = attributes]
       ]
     ]
     return rack

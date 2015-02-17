@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JacksonInject
 import com.fasterxml.jackson.annotation.JsonCreator
 import java.beans.PropertyChangeListener
 
-class Attributes extends CollectionBase<Attribute, Content> {
+class Attributes extends CollectionBase<Attribute> {
 
   @JsonCreator
   new(@JacksonInject("pcls")PropertyChangeListener[] pcls) {
