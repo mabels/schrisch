@@ -15,7 +15,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-    <xtend.version>2.7.3</xtend.version>
+    <xtend.version>2.9.2</xtend.version>
 
     <junit.version>4.11</junit.version>
     <mockito.version>1.9.5</mockito.version>

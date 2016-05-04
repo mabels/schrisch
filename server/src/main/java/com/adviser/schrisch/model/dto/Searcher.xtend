@@ -99,7 +99,7 @@ class Searcher implements PropertyChangeListener {
 
   val directory = new RAMDirectory()
 
-  val indexWriterConfig = new IndexWriterConfig(Version.LATEST, new StandardAnalyzer())
+  val indexWriterConfig = new IndexWriterConfig(new StandardAnalyzer())
 
   val source2model = new HashMap<String, Base>()
 
@@ -133,8 +133,8 @@ class Searcher implements PropertyChangeListener {
     val analyzer = new StandardAnalyzer()
 
     //val queryParser = new MultiFieldQueryParser(fieldList, analyzer)
-    val collector = TopScoreDocCollector.create(resultCount, true);
-    val flags = fieldList.map[s|BooleanClause.Occur.SHOULD]
+    val collector = TopScoreDocCollector.create(resultCount, null);
+    //val flags = fieldList.map[s|BooleanClause.Occur.SHOULD]
     val parser = new MultiFieldQueryParser(fieldList, analyzer)
     parser.defaultOperator = QueryParser.Operator.OR
     val query = parser.parse(q_str)
