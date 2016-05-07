@@ -4,6 +4,7 @@ jdk:
   - oraclejdk8
 
 before_install:
+    - curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
     - sudo apt-get update -qq
     - sudo apt-get install -y nodejs
 
