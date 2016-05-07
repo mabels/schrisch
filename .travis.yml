@@ -4,4 +4,7 @@ jdk:
   - oraclejdk8
   - openjdk8
 
+install:
+    - apt-get install nodejs
+
 
